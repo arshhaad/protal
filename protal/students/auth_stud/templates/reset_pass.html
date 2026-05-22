@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reset Password — EduPortal</title>
+  <meta name="description" content="Set a new password for your EduPortal student account." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #C5A880;
+      --primary-dark: #A38A6A;
+      --accent: #FFFFFF;
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --surface2: #111111;
+      --border: rgba(197, 168, 128, 0.25);
+      --text: #F5F5F7;
+      --text-muted: #86868b;
+    }
+    body {
+      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    body::before, body::after {
+      content: ''; position: fixed; border-radius: 50%; filter: blur(80px);
+      opacity: 0.35; animation: floatBlob 8s ease-in-out infinite alternate; pointer-events: none;
+    }
+    body::before { width: 500px; height: 500px; background: radial-gradient(circle, #6c63ff, transparent); top: -150px; left: -150px; }
+    body::after { width: 400px; height: 400px; background: radial-gradient(circle, #00d4aa, transparent); bottom: -100px; right: -100px; animation-delay: -4s; }
+    @keyframes floatBlob { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(40px,40px) scale(1.1); } }
+
+    .card {
+      background: rgba(26,26,46,0.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border); border-radius: 24px; padding: 48px 40px;
+      width: 100%; max-width: 440px; position: relative; z-index: 10;
+      animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: translateY(0); } }
+
+    .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .logo-icon { width: 44px; height: 44px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .logo-text { font-size: 22px; font-weight: 700; }
+    .logo-text span { color: var(--primary); }
+
+    .icon-wrap { width: 72px; height: 72px; background: rgba(0,212,170,0.12); border: 2px solid rgba(0,212,170,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 24px; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(0,212,170,0.4); } 50% { box-shadow: 0 0 0 12px rgba(0,212,170,0); } }
+
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+    .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 32px; text-align: center; line-height: 1.6; }
+
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .input-wrap { position: relative; }
+    .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: 0.5; pointer-events: none; }
+    input[type="password"] {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 12px; padding: 13px 44px 13px 44px; font-size: 15px;
+      color: var(--text); font-family: inherit; outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    input:focus { border-color: var(--primary); background: rgba(108,99,255,0.08); box-shadow: 0 0 0 3px rgba(108,99,255,0.18); }
+    input::placeholder { color: var(--text-muted); }
+
+    .password-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text-muted);
+      font-size: 18px; padding: 0; line-height: 1; transition: color 0.2s;
+    }
+    .password-toggle:hover { color: var(--primary); }
+
+    /* Password strength bar */
+    .strength-bar { height: 4px; border-radius: 4px; background: rgba(255,255,255,0.1); margin-top: 8px; overflow: hidden; }
+    .strength-fill { height: 100%; border-radius: 4px; width: 0%; transition: width 0.3s, background 0.3s; }
+    .strength-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .match-msg { font-size: 12px; margin-top: 6px; }
+    .match-ok { color: #00d4aa; } .match-err { color: #ff6b6b; }
+
+    .btn {
+      width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px;
+      font-weight: 600; font-family: inherit; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s; box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+      margin-top: 8px;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(108,99,255,0.5); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .messages { margin-bottom: 20px; }
+    .msg { padding: 12px 16px; border-radius: 10px; font-size: 14px; margin-bottom: 8px; }
+    .msg-error { background: rgba(255,107,107,0.12); border: 1px solid rgba(255,107,107,0.3); color: #ff9f9f; }
+    .msg-success { background: rgba(0,212,170,0.12); border: 1px solid rgba(0,212,170,0.3); color: #00d4aa; }
+
+    .back-link { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 20px; font-size: 14px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .back-link:hover { color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">🎓</div>
+      <div class="logo-text">Edu<span>Portal</span></div>
+    </div>
+
+    <div class="icon-wrap">🛡️</div>
+    <h1>Reset Password</h1>
+    <p class="subtitle">Choose a strong new password for your account.</p>
+
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+      <div class="msg msg-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'reset_pass' %}" id="resetForm">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="new_password">New Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="new_password" name="new_password" placeholder="Min. 8 characters" required />
+          <button type="button" class="password-toggle" id="toggle1">👁️</button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="strength-label" id="strengthLabel">Enter a password</div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm_password">Confirm Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required />
+          <button type="button" class="password-toggle" id="toggle2">👁️</button>
+        </div>
+        <div class="match-msg" id="matchMsg"></div>
+      </div>
+
+      <button type="submit" class="btn" id="resetBtn" disabled>Update Password →</button>
+    </form>
+
+    <a href="{% url 'login' %}" class="back-link">← Back to Login</a>
+  </div>
+
+  <script>
+    // Toggle passwords
+    ['toggle1','toggle2'].forEach((id, i) => {
+      const inputId = i === 0 ? 'new_password' : 'confirm_password';
+      document.getElementById(id).addEventListener('click', function() {
+        const inp = document.getElementById(inputId);
+        const isPass = inp.type === 'password';
+        inp.type = isPass ? 'text' : 'password';
+        this.textContent = isPass ? '🙈' : '👁️';
+      });
+    });
+
+    // Strength meter
+    const colors = ['#ff6b6b','#ff9f43','#f7b731','#00d4aa','#00d4aa'];
+    const labels = ['Very Weak','Weak','Fair','Strong','Very Strong'];
+    const widths = ['20%','40%','60%','80%','100%'];
+
+    function calcStrength(pwd) {
+      let score = 0;
+      if (pwd.length >= 8) score++;
+      if (/[A-Z]/.test(pwd)) score++;
+      if (/[0-9]/.test(pwd)) score++;
+      if (/[^A-Za-z0-9]/.test(pwd)) score++;
+      return score;
+    }
+
+    const newPwd = document.getElementById('new_password');
+    const confirmPwd = document.getElementById('confirm_password');
+    const fill = document.getElementById('strengthFill');
+    const lbl = document.getElementById('strengthLabel');
+    const matchMsg = document.getElementById('matchMsg');
+    const btn = document.getElementById('resetBtn');
+
+    function updateBtn() {
+      const s = calcStrength(newPwd.value);
+      const match = newPwd.value === confirmPwd.value && newPwd.value.length > 0;
+      btn.disabled = !(s >= 2 && match);
+    }
+
+    newPwd.addEventListener('input', function() {
+      const s = calcStrength(this.value);
+      if (this.value.length === 0) {
+        fill.style.width = '0%'; lbl.textContent = 'Enter a password';
+      } else {
+        fill.style.width = widths[s-1] || '0%';
+        fill.style.background = colors[s-1] || '#ff6b6b';
+        lbl.textContent = labels[s-1] || '';
+        lbl.style.color = colors[s-1] || '#ff6b6b';
+      }
+      if (confirmPwd.value) checkMatch();
+      updateBtn();
+    });
+
+    function checkMatch() {
+      if (confirmPwd.value.length === 0) { matchMsg.textContent = ''; return; }
+      if (newPwd.value === confirmPwd.value) {
+        matchMsg.textContent = '✓ Passwords match'; matchMsg.className = 'match-msg match-ok';
+      } else {
+        matchMsg.textContent = '✗ Passwords do not match'; matchMsg.className = 'match-msg match-err';
+      }
+      updateBtn();
+    }
+    confirmPwd.addEventListener('input', checkMatch);
+
+    document.getElementById('resetForm').addEventListener('submit', function() {
+      btn.textContent = 'Updating…'; btn.style.opacity = '0.75'; btn.disabled = true;
+    });
+  </script>
+</body>
+</html>

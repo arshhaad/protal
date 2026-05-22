@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exam Details — EduPortal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --primary: #C5A880; --accent: #A38A6A; --bg: #000000; --surface: #0a0a0a; --border: rgba(197, 168, 128, 0.2); --border2: rgba(255, 255, 255, 0.08); --text: #F5F5F7; --text-muted: #86868b; --sidebar-w: 260px; --topbar-h: 64px; --red: #ff453a; --yellow: #ffd60a; --green: #32d74b; }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+    .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border2); display: flex; flex-direction: column; z-index: 100; transition: transform 0.3s; }
+    .sidebar-logo { display: flex; align-items: center; gap: 12px; padding: 20px 20px 16px; border-bottom: 1px solid var(--border2); }
+    .sidebar-logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .sidebar-logo-text { font-size: 18px; font-weight: 700; } .sidebar-logo-text span { color: var(--primary); }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; } .sidebar-nav::-webkit-scrollbar { width: 4px; } .sidebar-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .nav-section-label { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 1.2px; text-transform: uppercase; padding: 16px 20px 6px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 20px; text-decoration: none; color: var(--text-muted); font-size: 14px; font-weight: 500; transition: background 0.15s, color 0.15s; position: relative; }
+    .nav-link:hover { background: rgba(108,99,255,0.08); color: var(--text); } .nav-link.active { background: rgba(108,99,255,0.15); color: var(--primary); font-weight: 600; } .nav-link.active::before { content: ''; position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; background: var(--primary); border-radius: 0 3px 3px 0; }
+    .nav-icon { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; } .nav-badge { margin-left: auto; background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 20px; } .nav-badge.red { background: var(--red); }
+    .sidebar-user { padding: 16px 20px; border-top: 1px solid var(--border2); display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .user-info { flex: 1; min-width: 0; } .user-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .user-id { font-size: 12px; color: var(--text-muted); }
+    .logout-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 18px; transition: color 0.2s; } .logout-btn:hover { color: var(--red); }
+    .topbar { position: fixed; top: 0; left: var(--sidebar-w); right: 0; height: var(--topbar-h); background: rgba(15,14,23,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border2); display: flex; align-items: center; padding: 0 28px; gap: 16px; z-index: 90; }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; color: var(--text); font-size: 22px; }
+    .page-title { font-size: 18px; font-weight: 700; flex: 1; }
+    .notif-btn { position: relative; background: rgba(255,255,255,0.06); border: 1px solid var(--border2); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; text-decoration: none; transition: background 0.2s; } .notif-btn:hover { background: rgba(108,99,255,0.12); } .notif-dot { position: absolute; top: 7px; right: 7px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; border: 2px solid var(--bg); }
+    .main { margin-left: var(--sidebar-w); padding-top: var(--topbar-h); min-height: 100vh; }
+    .content { padding: 28px; }
+    .page-header { margin-bottom: 24px; } .page-header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; } .page-header p { color: var(--text-muted); font-size: 14px; }
+    /* Exam specific */
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+    .filter-btn { padding: 8px 18px; border-radius: 20px; border: 1px solid var(--border2); background: rgba(255,255,255,0.05); color: var(--text-muted); font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .filter-btn:hover, .filter-btn.active { background: rgba(108,99,255,0.15); border-color: var(--border); color: var(--primary); }
+    .exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+    .exam-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 20px; transition: transform 0.2s, border-color 0.2s; animation: fadeIn 0.4s ease both; }
+    .exam-card:hover { transform: translateY(-3px); border-color: var(--border); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .exam-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+    .exam-subject-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .exam-subject-icon.blue   { background: rgba(78,205,196,0.15); }
+    .exam-subject-icon.purple { background: rgba(108,99,255,0.15); }
+    .exam-subject-icon.yellow { background: rgba(247,183,49,0.15); }
+    .exam-subject-icon.red    { background: rgba(255,107,107,0.15); }
+    .exam-subject-icon.green  { background: rgba(0,212,170,0.15); }
+    .exam-status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .status-upcoming { background: rgba(247,183,49,0.15); color: var(--yellow); }
+    .status-ongoing  { background: rgba(0,212,170,0.15); color: var(--green); }
+    .status-completed{ background: rgba(255,255,255,0.08); color: var(--text-muted); }
+    .exam-subject { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .exam-type { font-size: 12px; color: var(--text-muted); }
+    .exam-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .meta-item label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 3px; }
+    .meta-item span { font-size: 13px; font-weight: 600; }
+    .exam-syllabus { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border2); font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main { margin-left: 0; } .topbar { left: 0; } .hamburger { display: flex; } .content { padding: 16px; } }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; } .overlay.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">🎓</div><div class="sidebar-logo-text">Edu<span>Portal</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="{% url 'dashboard' %}" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a href="{% url 'profile' %}" class="nav-link"><span class="nav-icon">👤</span> Profile</a>
+      <div class="nav-section-label">Academics</div>
+      <a href="{% url 'exam_details' %}" class="nav-link active"><span class="nav-icon">📝</span> Exam Details</a>
+      <a href="{% url 'marks' %}" class="nav-link"><span class="nav-icon">📊</span> Marks</a>
+      <a href="{% url 'attendance' %}" class="nav-link"><span class="nav-icon">📅</span> Attendance</a>
+      <a href="{% url 'sessions' %}" class="nav-link"><span class="nav-icon">🖥️</span> Sessions</a>
+      <a href="{% url 'my_courses' %}" class="nav-link"><span class="nav-icon">📚</span> My Courses</a>
+      <a href="{% url 'student_progress' %}" class="nav-link"><span class="nav-icon">📈</span> Student Progress</a>
+      <div class="nav-section-label">Actions</div>
+      <a href="{% url 'tasks' %}" class="nav-link"><span class="nav-icon">✅</span> Tasks<span class="nav-badge">3</span></a>
+      <a href="{% url 'leave_request' %}" class="nav-link"><span class="nav-icon">🗓️</span> Leave Request</a>
+      <a href="{% url 'payment' %}" class="nav-link"><span class="nav-icon">💳</span> Payment</a>
+      <div class="nav-section-label">Support</div>
+      <a href="{% url 'notifications' %}" class="nav-link"><span class="nav-icon">🔔</span> Notifications<span class="nav-badge red">5</span></a>
+      <a href="{% url 'tickets' %}" class="nav-link"><span class="nav-icon">🎟️</span> Tickets</a>
+      <a href="{% url 'contact_us' %}" class="nav-link"><span class="nav-icon">📞</span> Contact Us</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar">{{ user.username|first|upper|default:"S" }}</div>
+      <div class="user-info"><div class="user-name">{{ user.get_full_name|default:"Student" }}</div><div class="user-id">{{ student.enroll_id|default:"STU-2024-001" }}</div></div>
+      <a href="{% url 'logout' %}" class="logout-btn">🚪</a>
+    </div>
+  </aside>
+  <header class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="page-title">📝 Exam Details</div>
+    <a href="{% url 'notifications' %}" class="notif-btn">🔔<span class="notif-dot"></span></a>
+  </header>
+  <main class="main">
+    <div class="content">
+      <div class="page-header">
+        <h1>Exam Details</h1>
+        <p>Upcoming, ongoing and completed examinations</p>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterExams('all',this)">All</button>
+        <button class="filter-btn" onclick="filterExams('upcoming',this)">Upcoming</button>
+        <button class="filter-btn" onclick="filterExams('ongoing',this)">Ongoing</button>
+        <button class="filter-btn" onclick="filterExams('completed',this)">Completed</button>
+      </div>
+      <div class="exam-grid" id="examGrid">
+        {% if exams %}
+          {% for exam in exams %}
+          <div class="exam-card" data-status="{{ exam.status }}">
+            <div class="exam-card-header">
+              <div class="exam-subject-icon purple">📖</div>
+              <span class="exam-status status-{{ exam.status }}">{{ exam.status|capfirst }}</span>
+            </div>
+            <div class="exam-subject">{{ exam.subject }}</div>
+            <div class="exam-type">{{ exam.exam_type }}</div>
+            <div class="exam-meta">
+              <div class="meta-item"><label>Date</label><span>{{ exam.date }}</span></div>
+              <div class="meta-item"><label>Time</label><span>{{ exam.time }}</span></div>
+              <div class="meta-item"><label>Duration</label><span>{{ exam.duration }}</span></div>
+              <div class="meta-item"><label>Max Marks</label><span>{{ exam.max_marks }}</span></div>
+            </div>
+            <div class="exam-syllabus">📋 {{ exam.syllabus|truncatechars:80 }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+        <!-- Demo cards -->
+        <div class="exam-card" data-status="upcoming">
+          <div class="exam-card-header"><div class="exam-subject-icon purple">🔢</div><span class="exam-status status-upcoming">Upcoming</span></div>
+          <div class="exam-subject">Mathematics</div><div class="exam-type">Unit Test II</div>
+          <div class="exam-meta">
+            <div class="meta-item"><label>Date</label><span>28 May 2024</span></div>
+            <div class="meta-item"><label>Time</label><span>10:00 AM</span></div>
+            <div class="meta-item"><label>Duration</label><span>3 Hours</span></div>
+            <div class="meta-item"><label>Max Marks</label><span>100</span></div>
+          </div>
+          <div class="exam-syllabus">📋 Algebra, Calculus, Trigonometry — Chapters 5 to 9</div>
+        </div>
+        <div class="exam-card" data-status="upcoming">
+          <div class="exam-card-header"><div class="exam-subject-icon blue">🧪</div><span class="exam-status status-upcoming">Upcoming</span></div>
+          <div class="exam-subject">Physics</div><div class="exam-type">Practical Exam</div>
+          <div class="exam-meta">
+            <div class="meta-item"><label>Date</label><span>30 May 2024</span></div>
+            <div class="meta-item"><label>Time</label><span>9:00 AM</span></div>
+            <div class="meta-item"><label>Duration</label><span>2 Hours</span></div>
+            <div class="meta-item"><label>Max Marks</label><span>30</span></div>
+          </div>
+          <div class="exam-syllabus">📋 Optics experiment, Ohm's law verification, Resonance tube</div>
+        </div>
+        <div class="exam-card" data-status="ongoing">
+          <div class="exam-card-header"><div class="exam-subject-icon green">⚗️</div><span class="exam-status status-ongoing">Ongoing</span></div>
+          <div class="exam-subject">Chemistry</div><div class="exam-type">Mid-Term</div>
+          <div class="exam-meta">
+            <div class="meta-item"><label>Date</label><span>22 May 2024</span></div>
+            <div class="meta-item"><label>Time</label><span>2:00 PM</span></div>
+            <div class="meta-item"><label>Duration</label><span>3 Hours</span></div>
+            <div class="meta-item"><label>Max Marks</label><span>100</span></div>
+          </div>
+          <div class="exam-syllabus">📋 Organic Chemistry, Chemical Bonding — Chapters 1 to 6</div>
+        </div>
+        <div class="exam-card" data-status="completed">
+          <div class="exam-card-header"><div class="exam-subject-icon yellow">📜</div><span class="exam-status status-completed">Completed</span></div>
+          <div class="exam-subject">English Literature</div><div class="exam-type">Unit Test I</div>
+          <div class="exam-meta">
+            <div class="meta-item"><label>Date</label><span>10 May 2024</span></div>
+            <div class="meta-item"><label>Time</label><span>11:00 AM</span></div>
+            <div class="meta-item"><label>Duration</label><span>2 Hours</span></div>
+            <div class="meta-item"><label>Max Marks</label><span>80</span></div>
+          </div>
+          <div class="exam-syllabus">📋 Prose section, Poetry — The Road Not Taken, My Struggle</div>
+        </div>
+        <div class="exam-card" data-status="completed">
+          <div class="exam-card-header"><div class="exam-subject-icon red">🌍</div><span class="exam-status status-completed">Completed</span></div>
+          <div class="exam-subject">History</div><div class="exam-type">Unit Test I</div>
+          <div class="exam-meta">
+            <div class="meta-item"><label>Date</label><span>5 May 2024</span></div>
+            <div class="meta-item"><label>Time</label><span>9:00 AM</span></div>
+            <div class="meta-item"><label>Duration</label><span>2.5 Hours</span></div>
+            <div class="meta-item"><label>Max Marks</label><span>80</span></div>
+          </div>
+          <div class="exam-syllabus">📋 World War II, Indian Independence Movement, Cold War</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+  <script>
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
+    function filterExams(status, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.exam-card').forEach(card => {
+        card.style.display = (status === 'all' || card.dataset.status === status) ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
