@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff Attendance - Staff Hub{% endblock %}
+{% block page_title %}Staff Clock-In Registry{% endblock %}
+
+{% block extra_css %}
+<style>
+    .attendance-layout {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 32px;
+    }
+    @media (max-width: 900px) {
+        .attendance-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .clock-card {
+        text-align: center;
+        padding: 40px 24px;
+        position: relative;
+    }
+
+    .time-display {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 16px 0;
+        letter-spacing: 1px;
+        background: linear-gradient(to right, #ffffff, var(--accent-primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+    }
+    
+    .status-indicator.offline { background-color: rgba(239, 68, 68, 0.1); color: var(--accent-danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+    .status-indicator.online { background-color: rgba(16, 185, 129, 0.1); color: var(--accent-success); border: 1px solid rgba(16, 185, 129, 0.2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="attendance-layout">
+    <!-- Left Column: Clock Action -->
+    <div>
+        <div class="glass-card clock-card">
+            <h3 style="font-size: 1.2rem; margin-bottom: 8px;">Shift Control Console</h3>
+            
+            {% if checked_in %}
+            <div class="status-indicator online">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--accent-success); display: inline-block;"></span>
+                Active Duty
+            </div>
+            <div class="time-display" id="clock">00:00:00</div>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 32px;">Checked in at: <strong>{{ check_in_time }}</strong></p>
+            
+            <form method="POST" action="{% url 'staff_attendance_staff' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="check_out">
+                <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, var(--accent-danger), #ef4444); width: 100%; justify-content: center; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                    Clock Out Shift
+                </button>
+            </form>
+            {% else %}
+            <div class="status-indicator offline">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--accent-danger); display: inline-block;"></span>
+                Not Checked In
+            </div>
+            <div class="time-display" id="clock">00:00:00</div>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 32px;">No active shift detected for today.</p>
+            
+            <form method="POST" action="{% url 'staff_attendance_staff' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="check_in">
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
+                    Clock In Shift
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Shift Log -->
+    <div>
+        <div class="glass-card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Attendance Log</h3>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Clock In</th>
+                            <th>Clock Out</th>
+                            <th>Logged Hours</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td style="font-weight: 600;">{{ record.date }}</td>
+                            <td>{{ record.check_in }}</td>
+                            <td>{{ record.check_out }}</td>
+                            <td style="font-weight: 600; color: var(--accent-blue);">{{ record.hours }}</td>
+                            <td>
+                                <span class="status-indicator {% if record.status == 'Present' %}online{% else %}offline{% endif %}" style="margin: 0; padding: 2px 8px; font-size: 0.75rem;">
+                                    {{ record.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateClock() {
+        const now = new Date();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        const secs = String(now.getSeconds()).padStart(2, '0');
+        const el = document.getElementById('clock');
+        if (el) {
+            el.innerText = hrs + ':' + mins + ':' + secs;
+        }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+{% endblock %}

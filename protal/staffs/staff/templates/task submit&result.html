@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Task Reviews - Staff Hub{% endblock %}
+{% block page_title %}Grading & Reviews Queue{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-pill {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .status-pill.graded { background-color: rgba(16, 185, 129, 0.1); color: var(--accent-success); }
+    .status-pill.pending { background-color: rgba(245, 158, 11, 0.1); color: var(--accent-warning); }
+
+    /* Modal dialog */
+    .grading-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 500px;
+        padding: 32px;
+        box-shadow: var(--shadow-lg);
+        animation: scaleUp 0.3s ease;
+    }
+
+    @keyframes scaleUp {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div class="card-header">
+        <h3 class="card-title">Pending Student Submissions</h3>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Student Info</th>
+                    <th>Task Description</th>
+                    <th>Submitted On</th>
+                    <th>Attachment</th>
+                    <th>Status</th>
+                    <th>Result / Grade</th>
+                    <th>Review Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in submissions %}
+                <tr>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: 600;">{{ sub.student }}</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">{{ sub.roll }}</span>
+                        </div>
+                    </td>
+                    <td>{{ sub.task_title }}</td>
+                    <td>{{ sub.submitted_on }}</td>
+                    <td>
+                        <a href="#" class="header-btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="alert('Downloading student file: {{ sub.file }}')">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            View PDF
+                        </a>
+                    </td>
+                    <td>
+                        <span class="status-pill {{ sub.status|lower }}">{{ sub.status }}</span>
+                    </td>
+                    <td style="font-weight: 700; color: var(--accent-primary);">
+                        {{ sub.grade|default:"---" }}
+                    </td>
+                    <td>
+                        {% if sub.status == 'Pending' %}
+                        <button class="btn-primary" style="padding: 8px 12px; font-size: 0.85rem;" onclick="openGradingModal('{{ sub.id }}', '{{ sub.student }}', '{{ sub.task_title }}')">
+                            Review & Grade
+                        </button>
+                        {% else %}
+                        <button class="btn-secondary" style="padding: 8px 12px; font-size: 0.85rem;" onclick="alert('Feedback sent:\n\n{{ sub.review|escapejs }}')">
+                            View Comments
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Grading Modal -->
+<div class="grading-modal" id="gradingModal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 8px; font-size: 1.3rem;">Evaluation Form</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 24px;" id="modalStudentText">Student: Name</p>
+        
+        <form method="POST" action="{% url 'staff_tasks_reviews' %}">
+            {% csrf_token %}
+            <input type="hidden" name="sub_id" id="modalSubId">
+            
+            <div class="form-group">
+                <label class="form-label" for="grade">Letter Grade / Marks</label>
+                <select class="form-control" id="grade" name="grade" required>
+                    <option value="A+">A+ (Excellent)</option>
+                    <option value="A">A (Outstanding)</option>
+                    <option value="A-">A- (Very Good)</option>
+                    <option value="B+">B+ (Good)</option>
+                    <option value="B">B (Satisfactory)</option>
+                    <option value="C">C (Pass)</option>
+                    <option value="F">F (Fail)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="review">Teacher Review / Remarks</label>
+                <textarea class="form-control" id="review" name="review" rows="4" placeholder="Add specific improvement points or suggestions..." required></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button type="button" class="btn-secondary" onclick="closeGradingModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Submit Grade</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openGradingModal(id, student, task) {
+        document.getElementById('modalSubId').value = id;
+        document.getElementById('modalStudentText').innerText = 'Student: ' + student + ' — ' + task;
+        document.getElementById('gradingModal').style.display = 'flex';
+    }
+    
+    function closeGradingModal() {
+        document.getElementById('gradingModal').style.display = 'none';
+    }
+</script>
+{% endblock %}

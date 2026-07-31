@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Class - Staff Hub{% endblock %}
+{% block page_title %}Academic Class Groups{% endblock %}
+
+{% block extra_css %}
+<style>
+    .classes-layout {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 32px;
+    }
+    @media (max-width: 900px) {
+        .classes-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="classes-layout">
+    <!-- Left Column: Create Form -->
+    <div>
+        <div class="glass-card">
+            <div class="card-header">
+                <h3 class="card-title">Setup New Class</h3>
+            </div>
+            <form method="POST" action="{% url 'staff_class_creation' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="name">Class Name</label>
+                    <input class="form-control" type="text" id="name" name="name" placeholder="e.g. Physics Honours Year A" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="code">Class Code</label>
+                    <input class="form-control" type="text" id="code" name="code" placeholder="e.g. PHY-A" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="semester">Semester</label>
+                    <select class="form-control" id="semester" name="semester" required>
+                        <option value="Semester 1">Semester 1</option>
+                        <option value="Semester 2">Semester 2</option>
+                        <option value="Semester 3">Semester 3</option>
+                        <option value="Semester 4">Semester 4</option>
+                        <option value="Semester 5">Semester 5</option>
+                        <option value="Semester 6">Semester 6</option>
+                        <option value="Semester 7">Semester 7</option>
+                        <option value="Semester 8">Semester 8</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="representative">Student Representative</label>
+                    <input class="form-control" type="text" id="representative" name="representative" placeholder="e.g. Aditya Sharma">
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;">Create Class Group</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Column: Classes Grid -->
+    <div>
+        <div class="glass-card">
+            <div class="card-header">
+                <h3 class="card-title">Current Active Classes</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Class Code</th>
+                            <th>Class Name</th>
+                            <th>Semester</th>
+                            <th>Total Strength</th>
+                            <th>Class Representative</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cls in classes %}
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent-primary);">{{ cls.code }}</td>
+                            <td style="font-weight: 600;">{{ cls.name }}</td>
+                            <td style="color: var(--text-secondary);">{{ cls.sem }}</td>
+                            <td style="font-weight: 600; color: var(--accent-blue);">{{ cls.strength }} Students</td>
+                            <td>{{ cls.representative }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

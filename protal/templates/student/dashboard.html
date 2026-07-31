@@ -1,0 +1,962 @@
+{% extends 'student/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Student Portal{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon bg-gradient">
+                    <i data-lucide="graduation-cap"></i>
+                </div>
+                <span class="logo-text font-jakarta">EduPortal</span>
+            </div>
+            <button class="btn-icon mobile-close-btn" id="mobile-close-btn">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-section-title">Academic</span>
+                <a href="#profile" class="nav-item active" data-tab="profile">
+                    <i data-lucide="user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="#courses" class="nav-item" data-tab="courses">
+                    <i data-lucide="book-open"></i>
+                    <span>My Courses</span>
+                </a>
+                <a href="#exams" class="nav-item" data-tab="exams">
+                    <i data-lucide="calendar"></i>
+                    <span>Exam Details</span>
+                </a>
+                <a href="#marks" class="nav-item" data-tab="marks">
+                    <i data-lucide="award"></i>
+                    <span>Marks</span>
+                </a>
+                <a href="#progress" class="nav-item" data-tab="progress">
+                    <i data-lucide="trending-up"></i>
+                    <span>Student Progress</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <span class="nav-section-title">Utilities</span>
+                <a href="#tasks" class="nav-item" data-tab="tasks">
+                    <i data-lucide="check-square"></i>
+                    <span>Tasks</span>
+                </a>
+                <a href="#sessions" class="nav-item" data-tab="sessions">
+                    <i data-lucide="video"></i>
+                    <span>Sessions</span>
+                </a>
+                <a href="#attendance" class="nav-item" data-tab="attendance">
+                    <i data-lucide="pie-chart"></i>
+                    <span>Attendance</span>
+                </a>
+                <a href="#leave-request" class="nav-item" data-tab="leave-request">
+                    <i data-lucide="file-text"></i>
+                    <span>Leave Request</span>
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <span class="nav-section-title">Support & Fees</span>
+                <a href="#tickets" class="nav-item" data-tab="tickets">
+                    <i data-lucide="life-buoy"></i>
+                    <span>Tickets</span>
+                </a>
+                <a href="#payment" class="nav-item" data-tab="payment">
+                    <i data-lucide="credit-card"></i>
+                    <span>Payment</span>
+                </a>
+                <a href="#contact" class="nav-item" data-tab="contact">
+                    <i data-lucide="phone"></i>
+                    <span>Contact Us</span>
+                </a>
+                <a href="#notifications" class="nav-item" data-tab="notifications">
+                    <i data-lucide="bell"></i>
+                    <span>Notifications</span>
+                    <span class="badge notification-badge-count">3</span>
+                </a>
+            </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <img src="{{ avatar_url }}" alt="Profile Avatar" class="user-avatar-sm">
+                <div class="user-info">
+                    <span class="user-name">{{ student_name }}</span>
+                    <span class="user-role">{{ roll_no }}</span>
+                </div>
+            </div>
+            <a href="{% url 'student:logout' %}" class="btn-logout" title="Sign Out">
+                <i data-lucide="log-out"></i>
+                <span>Sign Out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <button class="btn-icon sidebar-toggle-btn" id="sidebar-toggle-btn">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="welcome-text">
+                    <h1 id="page-title">Profile</h1>
+                    <p class="current-date" id="current-date">Friday, May 22, 2026</p>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <!-- Notifications dropdown trigger -->
+                <div class="header-action-wrapper">
+                    <button class="btn-icon" id="header-notif-btn" title="View Notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="pulse-indicator"></span>
+                    </button>
+                    <!-- Quick Dropdown -->
+                    <div class="quick-dropdown" id="notif-dropdown">
+                        <div class="dropdown-header">
+                            <h3>Notifications</h3>
+                            <button id="mark-all-read-btn">Mark all read</button>
+                        </div>
+                        <div class="dropdown-list" id="quick-notif-list">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                        <div class="dropdown-footer">
+                            <a href="#notifications" id="view-all-notif-link">View all notifications</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="header-divider"></div>
+                
+                <!-- Quick User Menu -->
+                <div class="header-user-menu">
+                    <img src="{{ avatar_url }}" alt="Profile Avatar" class="user-avatar-md">
+                    <span class="header-username">{{ student_name }}</span>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Tab Content Views -->
+        <div class="content-body">
+            
+            <!-- 1. PROFILE VIEW -->
+            <div class="dashboard-view active" id="view-profile">
+                <div class="grid grid-3">
+                    <!-- Profile Card -->
+                    <div class="card card-span-2 profile-hero">
+                        <div class="profile-hero-bg"></div>
+                        <div class="profile-hero-content">
+                            <div class="avatar-container">
+                                <img src="{{ avatar_url }}" alt="Avatar" class="profile-avatar-lg">
+                                <span class="status-dot online"></span>
+                            </div>
+                            <div class="profile-meta">
+                                <h2>{{ student_name }}</h2>
+                                <p class="department-badge">{{ department }}</p>
+                                <div class="meta-row">
+                                    <span><i data-lucide="mail"></i> {{ student_email }}</span>
+                                    <span><i data-lucide="hash"></i> {{ roll_no }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-details-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Enrollment ID</span>
+                                <span class="detail-value">{{ enroll_id }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Current Semester</span>
+                                <span class="detail-value">{{ semester }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Advisor</span>
+                                <span class="detail-value">Dr. Charles Xavier</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Admission Year</span>
+                                <span class="detail-value">2023</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="card stats-sidebar-card">
+                        <h3 class="card-title">At a Glance</h3>
+                        <div class="card-divider"></div>
+                        <div class="vertical-stats-list">
+                            <div class="stat-row">
+                                <div class="stat-icon-wrapper cgpa-glow">
+                                    <i data-lucide="award"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Current CGPA</span>
+                                    <span class="stat-val">3.84 / 4.0</span>
+                                </div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-icon-wrapper attendance-glow">
+                                    <i data-lucide="percent"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Attendance Rate</span>
+                                    <span class="stat-val">87.5%</span>
+                                </div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-icon-wrapper courses-glow">
+                                    <i data-lucide="book-open"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Registered Courses</span>
+                                    <span class="stat-val">6 Classes</span>
+                                </div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-icon-wrapper fees-glow">
+                                    <i data-lucide="credit-card"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Due Payments</span>
+                                    <span class="stat-val">$1,250.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Tasks & Class Today -->
+                <div class="grid grid-2 mt-6">
+                    <div class="card">
+                        <div class="card-header-row">
+                            <h3 class="card-title">Next Class Today</h3>
+                            <a href="#sessions" class="card-action-link select-tab-link" data-target-tab="sessions">View Schedule</a>
+                        </div>
+                        <div class="upcoming-session-card bg-glass-dark">
+                            <div class="session-time-block">
+                                <span class="time-start">12:30</span>
+                                <span class="time-ampm">PM</span>
+                                <span class="time-duration">60 mins</span>
+                            </div>
+                            <div class="session-divider"></div>
+                            <div class="session-details">
+                                <span class="session-course-tag">CS-302</span>
+                                <h4>Advanced Database Management</h4>
+                                <p class="instructor"><i data-lucide="user-check"></i> Prof. Sarah Connor</p>
+                                <div class="session-meta">
+                                    <span><i data-lucide="map-pin"></i> Lab 4C (Or Online)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header-row">
+                            <h3 class="card-title">Recent Notifications</h3>
+                            <a href="#notifications" class="card-action-link select-tab-link" data-target-tab="notifications">See All</a>
+                        </div>
+                        <div class="notifications-quick-list" id="quick-profile-notifs">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2. MY COURSES VIEW -->
+            <div class="dashboard-view" id="view-courses">
+                <div class="courses-grid" id="courses-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+            
+            <!-- 3. EXAM DETAILS VIEW -->
+            <div class="dashboard-view" id="view-exams">
+                <!-- Exam Countdown Timer -->
+                <div class="countdown-card bg-gradient-violet">
+                    <div class="countdown-content">
+                        <div class="countdown-text">
+                            <span class="countdown-badge">Upcoming Exam</span>
+                            <h2>Theory of Computation (CS-305)</h2>
+                            <p>Starts on June 02, 2026 • 10:00 AM</p>
+                        </div>
+                        <div class="countdown-timer" id="exam-timer">
+                            <div class="timer-segment">
+                                <span class="timer-num" id="timer-days">10</span>
+                                <span class="timer-label">Days</span>
+                            </div>
+                            <div class="timer-segment">
+                                <span class="timer-num" id="timer-hours">22</span>
+                                <span class="timer-label">Hours</span>
+                            </div>
+                            <div class="timer-segment">
+                                <span class="timer-num" id="timer-mins">14</span>
+                                <span class="timer-label">Mins</span>
+                            </div>
+                            <div class="timer-segment">
+                                <span class="timer-num" id="timer-secs">45</span>
+                                <span class="timer-label">Secs</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="section-title mt-6">End Semester Examination Timetable</h3>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Subject Code</th>
+                                <th>Subject Title</th>
+                                <th>Exam Date</th>
+                                <th>Time</th>
+                                <th>Room / Mode</th>
+                                <th>Seat / Reg</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>CS-301</strong></td>
+                                <td>Compiler Design</td>
+                                <td>May 28, 2026</td>
+                                <td>09:30 AM - 12:30 PM</td>
+                                <td>Main Hall B</td>
+                                <td>Row 4, Seat 22</td>
+                                <td><span class="status-pill status-success">Scheduled</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>CS-302</strong></td>
+                                <td>Advanced Databases</td>
+                                <td>May 30, 2026</td>
+                                <td>10:00 AM - 01:00 PM</td>
+                                <td>Lab 3A</td>
+                                <td>Row 1, Seat 12</td>
+                                <td><span class="status-pill status-success">Scheduled</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>CS-305</strong></td>
+                                <td>Theory of Computation</td>
+                                <td>June 02, 2026</td>
+                                <td>10:00 AM - 01:00 PM</td>
+                                <td>Main Hall A</td>
+                                <td>Row 3, Seat 08</td>
+                                <td><span class="status-pill status-success">Scheduled</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>CS-308</strong></td>
+                                <td>Computer Networks</td>
+                                <td>June 04, 2026</td>
+                                <td>01:30 PM - 04:30 PM</td>
+                                <td>Main Hall B</td>
+                                <td>Row 5, Seat 19</td>
+                                <td><span class="status-pill status-success">Scheduled</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>CS-312</strong></td>
+                                <td>Software Engineering</td>
+                                <td>June 08, 2026</td>
+                                <td>09:30 AM - 12:30 PM</td>
+                                <td>Main Hall B</td>
+                                <td>Row 2, Seat 14</td>
+                                <td><span class="status-pill status-success">Scheduled</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 4. MARKS VIEW -->
+            <div class="dashboard-view" id="view-marks">
+                <div class="grid grid-3">
+                    <div class="card stat-mini-card">
+                        <div class="stat-mini-header">
+                            <span class="stat-mini-lbl">Current Semester SGPA</span>
+                            <i data-lucide="line-chart" class="text-indigo"></i>
+                        </div>
+                        <h2>3.91 <span class="small-text text-success">▲ +0.08</span></h2>
+                        <p class="stat-mini-desc">Calculated from 5 subjects graded</p>
+                    </div>
+                    <div class="card stat-mini-card">
+                        <div class="stat-mini-header">
+                            <span class="stat-mini-lbl">Total Credits Cleared</span>
+                            <i data-lucide="shield-check" class="text-teal"></i>
+                        </div>
+                        <h2>112 / 140</h2>
+                        <p class="stat-mini-desc">80% Graduation Credits Complete</p>
+                    </div>
+                    <div class="card stat-mini-card">
+                        <div class="stat-mini-header">
+                            <span class="stat-mini-lbl">Academic Standing</span>
+                            <i data-lucide="award" class="text-violet"></i>
+                        </div>
+                        <h2>Dean's List</h2>
+                        <p class="stat-mini-desc">Top 5% in Department</p>
+                    </div>
+                </div>
+                
+                <h3 class="section-title mt-6">Semester 5 Report Card</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Course Code</th>
+                                <th>Course Title</th>
+                                <th>Credits</th>
+                                <th>Internal (40)</th>
+                                <th>External (60)</th>
+                                <th>Total (100)</th>
+                                <th>Grade Point</th>
+                                <th>Letter Grade</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>CS-251</strong></td>
+                                <td>Operating Systems</td>
+                                <td>4</td>
+                                <td>38</td>
+                                <td>54</td>
+                                <td>92</td>
+                                <td>10.0</td>
+                                <td><span class="grade-badge grade-s">S</span></td>
+                                <td>Pass</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CS-252</strong></td>
+                                <td>Design & Analysis of Algorithms</td>
+                                <td>4</td>
+                                <td>35</td>
+                                <td>48</td>
+                                <td>83</td>
+                                <td>9.0</td>
+                                <td><span class="grade-badge grade-a">A</span></td>
+                                <td>Pass</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CS-253</strong></td>
+                                <td>Formal Languages</td>
+                                <td>3</td>
+                                <td>32</td>
+                                <td>51</td>
+                                <td>83</td>
+                                <td>9.0</td>
+                                <td><span class="grade-badge grade-a">A</span></td>
+                                <td>Pass</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CS-254</strong></td>
+                                <td>Web Technologies</td>
+                                <td>4</td>
+                                <td>39</td>
+                                <td>56</td>
+                                <td>95</td>
+                                <td>10.0</td>
+                                <td><span class="grade-badge grade-s">S</span></td>
+                                <td>Pass</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CS-255</strong></td>
+                                <td>Microprocessors Lab</td>
+                                <td>2</td>
+                                <td>37</td>
+                                <td>50</td>
+                                <td>87</td>
+                                <td>9.0</td>
+                                <td><span class="grade-badge grade-a">A</span></td>
+                                <td>Pass</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 5. STUDENT PROGRESS VIEW -->
+            <div class="dashboard-view" id="view-progress">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">GPA Trend Across Semesters</h3>
+                        <div class="chart-container mt-4">
+                            <!-- Visual Dynamic SVG Line Chart -->
+                            <svg viewBox="0 0 500 250" class="svg-chart">
+                                <!-- Grid Lines -->
+                                <line x1="40" y1="50" x2="480" y2="50" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
+                                <line x1="40" y1="100" x2="480" y2="100" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
+                                <line x1="40" y1="150" x2="480" y2="150" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
+                                <line x1="40" y1="200" x2="480" y2="200" stroke="rgba(255,255,255,0.1)" />
+                                
+                                <!-- Line Path -->
+                                <path d="M 80 160 L 160 145 L 240 100 L 320 85 L 400 70" fill="none" stroke="url(#gpa-grad)" stroke-width="4" stroke-linecap="round"/>
+                                
+                                <!-- Dots -->
+                                <circle cx="80" cy="160" r="6" fill="#6366f1" class="chart-dot" />
+                                <circle cx="160" cy="145" r="6" fill="#6366f1" class="chart-dot" />
+                                <circle cx="240" cy="100" r="6" fill="#8b5cf6" class="chart-dot" />
+                                <circle cx="320" cy="85" r="6" fill="#8b5cf6" class="chart-dot" />
+                                <circle cx="400" cy="70" r="6" fill="#14b8a6" class="chart-dot" />
+                                
+                                <!-- Labels -->
+                                <text x="80" y="225" fill="rgba(255,255,255,0.6)" font-size="12" text-anchor="middle">Sem 1</text>
+                                <text x="160" y="225" fill="rgba(255,255,255,0.6)" font-size="12" text-anchor="middle">Sem 2</text>
+                                <text x="240" y="225" fill="rgba(255,255,255,0.6)" font-size="12" text-anchor="middle">Sem 3</text>
+                                <text x="320" y="225" fill="rgba(255,255,255,0.6)" font-size="12" text-anchor="middle">Sem 4</text>
+                                <text x="400" y="225" fill="rgba(255,255,255,0.6)" font-size="12" text-anchor="middle">Sem 5</text>
+                                
+                                <text x="75" y="145" fill="#fff" font-size="10" text-anchor="middle">3.20</text>
+                                <text x="155" y="130" fill="#fff" font-size="10" text-anchor="middle">3.35</text>
+                                <text x="235" y="85" fill="#fff" font-size="10" text-anchor="middle">3.68</text>
+                                <text x="315" y="70" fill="#fff" font-size="10" text-anchor="middle">3.76</text>
+                                <text x="400" y="52" fill="#fff" font-size="10" text-anchor="middle">3.91</text>
+                                
+                                <defs>
+                                    <linearGradient id="gpa-grad" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stop-color="#6366f1" />
+                                        <stop offset="50%" stop-color="#8b5cf6" />
+                                        <stop offset="100%" stop-color="#14b8a6" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Syllabus Completion & Workload</h3>
+                        <div class="chart-container mt-4">
+                            <!-- Visual Dynamic SVG Bar Chart -->
+                            <svg viewBox="0 0 500 250" class="svg-chart">
+                                <!-- Bars with round corner -->
+                                <rect x="60" y="50" width="30" height="150" rx="4" fill="rgba(255,255,255,0.05)" />
+                                <rect x="60" y="80" width="30" height="120" rx="4" fill="url(#bar-indigo)" />
+                                
+                                <rect x="150" y="50" width="30" height="150" rx="4" fill="rgba(255,255,255,0.05)" />
+                                <rect x="150" y="110" width="30" height="90" rx="4" fill="url(#bar-indigo)" />
+                                
+                                <rect x="240" y="50" width="30" height="150" rx="4" fill="rgba(255,255,255,0.05)" />
+                                <rect x="240" y="65" width="30" height="135" rx="4" fill="url(#bar-teal)" />
+                                
+                                <rect x="330" y="50" width="30" height="150" rx="4" fill="rgba(255,255,255,0.05)" />
+                                <rect x="330" y="95" width="30" height="105" rx="4" fill="url(#bar-violet)" />
+                                
+                                <rect x="420" y="50" width="30" height="150" rx="4" fill="rgba(255,255,255,0.05)" />
+                                <rect x="420" y="140" width="30" height="60" rx="4" fill="url(#bar-rose)" />
+                                
+                                <!-- Labels -->
+                                <text x="75" y="225" fill="rgba(255,255,255,0.6)" font-size="11" text-anchor="middle">CS-301</text>
+                                <text x="165" y="225" fill="rgba(255,255,255,0.6)" font-size="11" text-anchor="middle">CS-302</text>
+                                <text x="255" y="225" fill="rgba(255,255,255,0.6)" font-size="11" text-anchor="middle">CS-305</text>
+                                <text x="345" y="225" fill="rgba(255,255,255,0.6)" font-size="11" text-anchor="middle">CS-308</text>
+                                <text x="435" y="225" fill="rgba(255,255,255,0.6)" font-size="11" text-anchor="middle">CS-312</text>
+                                
+                                <text x="75" y="70" fill="#fff" font-size="10" text-anchor="middle">80%</text>
+                                <text x="165" y="100" fill="#fff" font-size="10" text-anchor="middle">60%</text>
+                                <text x="255" y="55" fill="#fff" font-size="10" text-anchor="middle">90%</text>
+                                <text x="345" y="85" fill="#fff" font-size="10" text-anchor="middle">70%</text>
+                                <text x="435" y="130" fill="#fff" font-size="10" text-anchor="middle">40%</text>
+                                
+                                <defs>
+                                    <linearGradient id="bar-indigo" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#6366f1" />
+                                        <stop offset="100%" stop-color="#4f46e5" />
+                                    </linearGradient>
+                                    <linearGradient id="bar-teal" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#14b8a6" />
+                                        <stop offset="100%" stop-color="#0d9488" />
+                                    </linearGradient>
+                                    <linearGradient id="bar-violet" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#8b5cf6" />
+                                        <stop offset="100%" stop-color="#7c3aed" />
+                                    </linearGradient>
+                                    <linearGradient id="bar-rose" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#f43f5e" />
+                                        <stop offset="100%" stop-color="#e11d48" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 6. TASKS VIEW -->
+            <div class="dashboard-view" id="view-tasks">
+                <div class="card task-manager-card">
+                    <div class="task-header-section">
+                        <div>
+                            <h3>Academic Tasks To-Do</h3>
+                            <p>Complete course duties, submission dates, and preparations</p>
+                        </div>
+                        <div class="task-progress-block">
+                            <span id="task-completed-label">2 of 5 Complete</span>
+                            <div class="task-progress-track">
+                                <div id="task-progress-bar" class="task-progress-bar" style="width: 40%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-divider"></div>
+                    
+                    <!-- Quick Add Form -->
+                    <form id="add-task-form" class="task-add-form">
+                        <input type="text" id="new-task-title" placeholder="Add a new custom checklist task..." required autocomplete="off">
+                        <button type="submit" class="btn btn-secondary">
+                            <i data-lucide="plus"></i>
+                            <span>Add</span>
+                        </button>
+                    </form>
+                    
+                    <!-- Checklist -->
+                    <ul class="task-list" id="task-list-element">
+                        <!-- Populated dynamically via JS -->
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 7. SESSIONS VIEW -->
+            <div class="dashboard-view" id="view-sessions">
+                <div class="sessions-filter-row">
+                    <button class="filter-tab active" data-filter="today">Today's Lectures</button>
+                    <button class="filter-tab" data-filter="week">Weekly Timetable</button>
+                </div>
+                
+                <div class="sessions-list" id="sessions-list-container">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+            
+            <!-- 8. ATTENDANCE VIEW -->
+            <div class="dashboard-view" id="view-attendance">
+                <div class="grid grid-3">
+                    <div class="card card-span-2">
+                        <h3 class="card-title">Monthly Attendance Breakdown (May 2026)</h3>
+                        <div class="card-divider"></div>
+                        <div class="attendance-grid-calendar">
+                            <!-- Populated dynamically via JS to represent days -->
+                        </div>
+                        <div class="calendar-legend mt-4">
+                            <span class="legend-item"><span class="legend-dot status-present"></span> Present</span>
+                            <span class="legend-item"><span class="legend-dot status-absent"></span> Absent</span>
+                            <span class="legend-item"><span class="legend-dot status-late"></span> Late</span>
+                            <span class="legend-item"><span class="legend-dot status-excused"></span> Excused Leave</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card flex-center flex-column text-center">
+                        <h3 class="card-title">Overall Attendance</h3>
+                        <div class="radial-progress-wrapper mt-4">
+                            <!-- SVG Circular Gauge -->
+                            <svg class="radial-progress-svg" viewBox="0 0 120 120">
+                                <circle class="progress-bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="progress-fill" cx="60" cy="60" r="50" style="stroke-dasharray: 314.159; stroke-dashoffset: 39.269;"></circle> <!-- 87.5% filled (314.159 * (1 - 0.875)) -->
+                            </svg>
+                            <div class="radial-progress-label">
+                                <span class="label-number">87.5%</span>
+                                <span class="label-text">Minimum 75% required</span>
+                            </div>
+                        </div>
+                        <div class="attendance-stat-breakdown mt-6">
+                            <p class="stat-count text-success">Present: <strong>35</strong></p>
+                            <p class="stat-count text-rose">Absent: <strong>3</strong></p>
+                            <p class="stat-count text-yellow">Late: <strong>2</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 9. LEAVE REQUEST VIEW -->
+            <div class="dashboard-view" id="view-leave-request">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">New Leave Request</h3>
+                        <div class="card-divider"></div>
+                        
+                        <form id="leave-request-form" class="dashboard-form">
+                            <div class="form-group-row">
+                                <div class="form-group flex-1">
+                                    <label for="leave-type">Leave Type</label>
+                                    <select id="leave-type" required>
+                                        <option value="Medical">Medical / Sick Leave</option>
+                                        <option value="Casual">Casual Leave</option>
+                                        <option value="Academic">Academic On-Duty (OD)</option>
+                                        <option value="Compassionate">Compassionate Leave</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group-row">
+                                <div class="form-group flex-1">
+                                    <label for="leave-start">Start Date</label>
+                                    <input type="date" id="leave-start" required>
+                                </div>
+                                <div class="form-group flex-1">
+                                    <label for="leave-end">End Date</label>
+                                    <input type="date" id="leave-end" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="leave-reason">Reason for Leave</label>
+                                <textarea id="leave-reason" rows="4" placeholder="Briefly describe the reason for your absence..." required></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <span>Submit Leave Application</span>
+                                <i data-lucide="send"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Leave History & Status</h3>
+                        <div class="card-divider"></div>
+                        <div class="history-list" id="leave-history-list">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 10. TICKETS VIEW -->
+            <div class="dashboard-view" id="view-tickets">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">Raise Support Ticket</h3>
+                        <p class="card-subtitle">Encountered an issue? Open a ticket to reach out to departments (IT, Finance, Exam Section).</p>
+                        <div class="card-divider"></div>
+                        
+                        <form id="ticket-form" class="dashboard-form">
+                            <div class="form-group">
+                                <label for="ticket-category">Related Department</label>
+                                <select id="ticket-category" required>
+                                    <option value="IT Support">IT Support & Login Issues</option>
+                                    <option value="Finance & Accounts">Finance & Tuition Fees</option>
+                                    <option value="Controller of Exams">Exams & Grade Corrections</option>
+                                    <option value="Hostel & Amenities">Hostel, Mess & Transport</option>
+                                    <option value="Academic Office">Academic Office & Registrations</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ticket-subject">Subject</label>
+                                <input type="text" id="ticket-subject" placeholder="e.g. Incomplete payment reflecting on ledger" required autocomplete="off">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ticket-description">Detailed Description</label>
+                                <textarea id="ticket-description" rows="5" placeholder="Explain the problem in detail. Include transaction IDs, date or subject codes if applicable." required></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <span>Open Ticket</span>
+                                <i data-lucide="plus-circle"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Active Tickets</h3>
+                        <div class="card-divider"></div>
+                        <div class="history-list" id="ticket-history-list">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 11. PAYMENT VIEW -->
+            <div class="dashboard-view" id="view-payment">
+                <div class="grid grid-3">
+                    <div class="card card-span-2">
+                        <h3 class="card-title">Tuition Fee Ledger</h3>
+                        <div class="card-divider"></div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Receipt ID</th>
+                                        <th>Term / Semester</th>
+                                        <th>Due Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>#TXN-90231</td>
+                                        <td>Semester 6 - Tuition Fee</td>
+                                        <td>May 15, 2026</td>
+                                        <td><strong>$1,250.00</strong></td>
+                                        <td><span class="status-pill status-error">Pending</span></td>
+                                        <td><button class="btn btn-small btn-primary pay-now-trigger" data-item="Semester 6 Tuition Fee" data-amt="1250.00">Pay Now</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>#TXN-87612</td>
+                                        <td>Semester 6 - Lab Charges</td>
+                                        <td>May 15, 2026</td>
+                                        <td><strong>$150.00</strong></td>
+                                        <td><span class="status-pill status-success">Paid</span></td>
+                                        <td><button class="btn btn-small btn-outline"><i data-lucide="download"></i> Rec</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>#TXN-80921</td>
+                                        <td>Semester 5 - Tuition Fee</td>
+                                        <td>Dec 10, 2025</td>
+                                        <td><strong>$1,250.00</strong></td>
+                                        <td><span class="status-pill status-success">Paid</span></td>
+                                        <td><button class="btn btn-small btn-outline"><i data-lucide="download"></i> Rec</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Due Amount Summary</h3>
+                        <div class="card-divider"></div>
+                        <div class="due-fee-block text-center mt-6">
+                            <span class="due-fee-lbl">Total Payable Outstanding</span>
+                            <h2 class="text-rose font-jakarta">$1,250.00</h2>
+                            <p class="due-fee-date text-warning">Late fee charges of $50 will apply after May 28, 2026</p>
+                        </div>
+                        <div class="payment-methods-logos mt-6">
+                            <i data-lucide="wallet"></i>
+                            <i data-lucide="credit-card"></i>
+                            <span class="logo-text-small">Secure 256-Bit SSL Payment Portal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 12. CONTACT US VIEW -->
+            <div class="dashboard-view" id="view-contact">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">Get in Touch</h3>
+                        <p class="card-subtitle">Submit your feedback, query, or academic grievances to the dean's office directly.</p>
+                        <div class="card-divider"></div>
+                        
+                        <form id="contact-form" class="dashboard-form">
+                            <div class="form-group">
+                                <label for="contact-subject">Inquiry Subject</label>
+                                <input type="text" id="contact-subject" placeholder="e.g. Feedback regarding cafeteria / library timings" required autocomplete="off">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="contact-message">Message</label>
+                                <textarea id="contact-message" rows="6" placeholder="Write your message here..." required></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <span>Send Message</span>
+                                <i data-lucide="send"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Official Directory</h3>
+                        <div class="card-divider"></div>
+                        
+                        <div class="contact-details-list">
+                            <div class="contact-card">
+                                <div class="contact-card-icon"><i data-lucide="map-pin"></i></div>
+                                <div class="contact-card-info">
+                                    <h4>Campus Address</h4>
+                                    <p>EduPortal Academy, Sector 6, Cyber City, Bangalore - 560001</p>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-card">
+                                <div class="contact-card-icon"><i data-lucide="phone-call"></i></div>
+                                <div class="contact-card-info">
+                                    <h4>Academic Office Hotline</h4>
+                                    <p>+91 (80) 555-0192 (Mon-Fri, 9:00 AM - 5:00 PM)</p>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-card">
+                                <div class="contact-card-icon"><i data-lucide="mail-check"></i></div>
+                                <div class="contact-card-info">
+                                    <h4>Helpdesk Email Support</h4>
+                                    <p>helpdesk@eduportal-academy.edu</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 13. NOTIFICATIONS VIEW -->
+            <div class="dashboard-view" id="view-notifications">
+                <div class="card">
+                    <div class="card-header-row">
+                        <h3 class="card-title">All Notifications & Alerts</h3>
+                        <button id="view-notif-clear-all" class="btn btn-small btn-outline">Clear All</button>
+                    </div>
+                    <div class="card-divider"></div>
+                    <div class="notifications-feed-list" id="notif-feed-list">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- MOCK PAYMENT MODAL -->
+<div class="modal-overlay" id="payment-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i data-lucide="lock"></i> Secure Checkout</h3>
+            <button class="modal-close" id="payment-modal-close"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="payment-summary-box">
+                <span class="summary-lbl" id="modal-pay-title">Semester 6 Tuition Fee</span>
+                <h3 class="summary-amt" id="modal-pay-amount">$1,250.00</h3>
+            </div>
+            
+            <form id="modal-payment-form" class="dashboard-form mt-4">
+                <div class="form-group">
+                    <label for="card-holder">Card Holder Name</label>
+                    <input type="text" id="card-holder" placeholder="Alex Mercer" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="card-number">Card Number</label>
+                    <input type="text" id="card-number" placeholder="4111 2222 3333 4444" max-length="19" required autocomplete="off">
+                </div>
+                <div class="form-group-row">
+                    <div class="form-group flex-1">
+                        <label for="card-exp">Expiry Date</label>
+                        <input type="text" id="card-exp" placeholder="MM/YY" max-length="5" required autocomplete="off">
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="card-cvv">CVV</label>
+                        <input type="password" id="card-cvv" placeholder="•••" max-length="3" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block mt-4" id="modal-pay-btn">
+                    <span>Pay $1,250.00</span>
+                    <i data-lucide="shield-check"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

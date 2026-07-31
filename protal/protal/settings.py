@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     # Custom apps
     'students.auth_stud',
     'students.stud_details',
+    'staffs.staff',
 ]
 
 MIDDLEWARE = [
