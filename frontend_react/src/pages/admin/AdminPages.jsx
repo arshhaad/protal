@@ -252,15 +252,16 @@ export function AdminManageHM() {
 
   const handleAdd = async (event) => {
     event.preventDefault();
+    const form = event.currentTarget;
     setError('');
-    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const data = Object.fromEntries(new FormData(form));
     if (data.password1 !== data.password2) return setError("Passwords don't match.");
     if (data.password1.length < 6) return setError('Password must be at least 6 characters.');
     setLoading(true);
     try {
       await api.createAdminHM(data);
       setShowModal(false);
-      event.currentTarget.reset();
+      form.reset();
       await loadHM();
     } catch (err) {
       setError(err.message || 'Unable to add Head Master.');
@@ -322,8 +323,9 @@ export function AdminManageUsers() {
 
   const handleAdd = async (event) => {
     event.preventDefault();
+    const form = event.currentTarget;
     setError('');
-    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const data = Object.fromEntries(new FormData(form));
     const nameParts = data.full_name.trim().split(/\s+/);
     if (nameParts.length < 2) return setError('Enter the student first and last name.');
     if (data.password.length < 6) return setError('Password must be at least 6 characters.');
@@ -335,7 +337,7 @@ export function AdminManageUsers() {
       });
       setUsers(current => [student, ...current]);
       setShowModal(false);
-      event.currentTarget.reset();
+      form.reset();
     } catch (err) { setError(err.message || 'Unable to add student.'); }
     finally { setLoading(false); }
   };
@@ -407,8 +409,9 @@ export function AdminManageStaff() {
 
   const handleAdd = async (event) => {
     event.preventDefault();
+    const form = event.currentTarget;
     setError('');
-    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const data = Object.fromEntries(new FormData(form));
     const nameParts = data.full_name.trim().split(/\s+/);
     if (nameParts.length < 2) return setError('Enter the staff first and last name.');
     if (data.password.length < 6) return setError('Password must be at least 6 characters.');
@@ -420,7 +423,7 @@ export function AdminManageStaff() {
       });
       setStaff(current => [member, ...current]);
       setShowModal(false);
-      event.currentTarget.reset();
+      form.reset();
     } catch (err) { setError(err.message || 'Unable to add staff.'); }
     finally { setLoading(false); }
   };
