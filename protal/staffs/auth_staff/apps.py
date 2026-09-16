@@ -2,4 +2,7 @@ from django.apps import AppConfig
 
 
 class AuthStaffConfig(AppConfig):
-    name = 'auth_staff'
+    default_auto_field = 'django.db.models.BigAutoField'
+    name  = 'staffs.auth_staff'
+    label = 'auth_staff'
+    verbose_name = 'Staff Authentication'

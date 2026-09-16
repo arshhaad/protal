@@ -1,0 +1,234 @@
+/* ============================================================
+   EDUPORTAL — GLOBAL DESIGN SYSTEM
+   Premium SaaS-style School Management Platform
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Prevent flash of wrong theme ── */
+html { color-scheme: light; }
+html[data-theme='dark'] { color-scheme: dark; }
+
+/* ── CSS Custom Properties — Light Mode ── */
+:root {
+  /* Brand */
+  --brand-50:  #fefce8;
+  --brand-100: #fef9c3;
+  --brand-200: #fef08a;
+  --brand-300: #fde047;
+  --brand-400: #facc15;
+  --brand-500: #eab308;
+  --brand-600: #ca8a04;
+  --brand-700: #a16207;
+
+  /* Accent (used for interactive elements) */
+  --accent:        #6366f1;
+  --accent-hover:  #4f46e5;
+  --accent-light:  rgba(99,102,241,0.1);
+  --accent-ring:   rgba(99,102,241,0.25);
+
+  /* Semantic colors */
+  --success:        #10b981;
+  --success-light:  rgba(16,185,129,0.1);
+  --warning:        #f59e0b;
+  --warning-light:  rgba(245,158,11,0.1);
+  --danger:         #ef4444;
+  --danger-light:   rgba(239,68,68,0.1);
+  --info:           #3b82f6;
+  --info-light:     rgba(59,130,246,0.1);
+
+  /* Surface (Light) */
+  --bg:           #f8fafc;
+  --bg-elevated:  #ffffff;
+  --bg-subtle:    #f1f5f9;
+  --bg-muted:     #e2e8f0;
+
+  /* Border */
+  --border:       #e2e8f0;
+  --border-focus: #6366f1;
+
+  /* Text */
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+  --text-disabled:  #cbd5e1;
+  --text-inverse:   #ffffff;
+
+  /* Sidebar */
+  --sidebar-bg:     #ffffff;
+  --sidebar-w:      260px;
+  --sidebar-collapsed-w: 68px;
+
+  /* Header */
+  --header-h:  64px;
+  --header-bg: rgba(255,255,255,0.85);
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.07), 0 4px 6px -2px rgba(0,0,0,0.03);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.03);
+
+  /* Radius */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  18px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* Spacing (multiples of 4px) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs:   11px;
+  --font-size-sm:   13px;
+  --font-size-base: 14px;
+  --font-size-md:   15px;
+  --font-size-lg:   16px;
+  --font-size-xl:   18px;
+  --font-size-2xl:  22px;
+  --font-size-3xl:  28px;
+  --font-size-4xl:  36px;
+
+  /* Transitions */
+  --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Sidebar active (student portal = indigo) */
+  --portal-accent: #6366f1;
+  --portal-accent-light: rgba(99,102,241,0.08);
+}
+
+/* ── CSS Custom Properties — Dark Mode ── */
+[data-theme='dark'] {
+  --bg:           #0c0e14;
+  --bg-elevated:  #13151f;
+  --bg-subtle:    #1a1d2b;
+  --bg-muted:     #232638;
+
+  --border:       rgba(255,255,255,0.07);
+  --border-focus: #6366f1;
+
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+  --text-disabled:  #334155;
+
+  --sidebar-bg:  #0f111a;
+  --header-bg:   rgba(13,15,21,0.85);
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.5), 0 4px 6px -2px rgba(0,0,0,0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.6), 0 10px 10px -5px rgba(0,0,0,0.4);
+
+  --accent-light: rgba(99,102,241,0.15);
+  --accent-ring:  rgba(99,102,241,0.3);
+  --success-light: rgba(16,185,129,0.15);
+  --warning-light: rgba(245,158,11,0.15);
+  --danger-light:  rgba(239,68,68,0.15);
+  --info-light:    rgba(59,130,246,0.15);
+
+  --portal-accent-light: rgba(99,102,241,0.12);
+}
+
+/* ── Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  height: 100%;
+  font-family: var(--font-family);
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.5;
+  transition: background var(--transition-slow), color var(--transition-slow);
+}
+
+#root { height: 100%; }
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  outline: none;
+}
+
+img { max-width: 100%; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ── Focus ring ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Skeleton loader ── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-subtle) 25%,
+    var(--bg-muted)  50%,
+    var(--bg-subtle) 75%
+  );
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

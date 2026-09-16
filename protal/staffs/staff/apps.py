@@ -2,4 +2,7 @@ from django.apps import AppConfig
 
 
 class StaffConfig(AppConfig):
-    name = 'staffs.staff'
+    default_auto_field = 'django.db.models.BigAutoField'
+    name  = 'staffs.staff'
+    label = 'staff'
+    verbose_name = 'Staff Portal'

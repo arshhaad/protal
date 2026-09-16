@@ -11,8 +11,13 @@ import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.db.models import Avg, Count, Q
 
-from .models import StudentProfile
+from .models import (
+    StudentProfile, Course, StudyMaterial, ExamSchedule, Mark,
+    AttendanceRecord, Session, Task, TaskSubmission, LeaveRequest,
+    FeeTransaction, Notification, Ticket, ContactMessage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +79,8 @@ def profile(request):
 def exam_details(request):
     """List all exams for the student's class."""
     student = _get_profile(request.user)
-    # Future: exams = Exam.objects.filter(class_name=student.class_name)
-    context = {'student': student, 'exams': []}
+    exams = ExamSchedule.objects.filter(class_name=student.class_name) if (student and student.class_name) else ExamSchedule.objects.all()
+    context = {'student': student, 'exams': exams}
     return render(request, 'Exam_details.html', context)
 
 
@@ -87,8 +92,27 @@ def exam_details(request):
 def marks(request):
     """Display the student's subject-wise marks."""
     student = _get_profile(request.user)
-    # Future: marks = Mark.objects.filter(student=student)
-    context = {'student': student, 'marks': []}
+    if student:
+        marks_qs = Mark.objects.filter(student=student)
+        avg_pct = marks_qs.aggregate(Avg('scored'))['scored__avg'] or 0
+        best_sub = marks_qs.order_by('-scored').first()
+        context = {
+            'student': student,
+            'marks': marks_qs,
+            'avg_percentage': round(avg_pct, 1) if avg_pct else 0,
+            'exams_appeared': marks_qs.count(),
+            'best_subject': best_sub.subject if best_sub else '—',
+            'rank': '—',
+        }
+    else:
+        context = {
+            'student': None,
+            'marks': [],
+            'avg_percentage': 0,
+            'exams_appeared': 0,
+            'best_subject': '—',
+            'rank': '—',
+        }
     return render(request, 'Marks.html', context)
 
 
@@ -100,8 +124,33 @@ def marks(request):
 def attendance(request):
     """Show attendance summary and daily log."""
     student = _get_profile(request.user)
-    # Future: records = Attendance.objects.filter(student=student)
-    context = {'student': student, 'attendance_log': []}
+    if student:
+        log = AttendanceRecord.objects.filter(student=student)
+        total = log.count()
+        present_count = log.filter(status='P').count()
+        absent_count = log.filter(status='A').count()
+        late_count = log.filter(status='L').count()
+        leave_count = log.filter(status='E').count()
+        pct = round((present_count / total) * 100) if total > 0 else 0
+        context = {
+            'student': student,
+            'attendance_log': log,
+            'attendance_pct': pct,
+            'present_days': present_count,
+            'absent_days': absent_count,
+            'late_days': late_count,
+            'leave_days': leave_count,
+        }
+    else:
+        context = {
+            'student': None,
+            'attendance_log': [],
+            'attendance_pct': 0,
+            'present_days': 0,
+            'absent_days': 0,
+            'late_days': 0,
+            'leave_days': 0,
+        }
     return render(request, 'Attendance.html', context)
 
 
@@ -113,8 +162,8 @@ def attendance(request):
 def sessions(request):
     """Virtual class sessions — live, upcoming, and recorded."""
     student = _get_profile(request.user)
-    # Future: sessions = Session.objects.filter(class_name=student.class_name)
-    context = {'student': student, 'sessions': []}
+    sessions_qs = Session.objects.filter(class_name=student.class_name) if (student and student.class_name) else Session.objects.all()
+    context = {'student': student, 'sessions': sessions_qs}
     return render(request, 'Sessions.html', context)
 
 
@@ -126,8 +175,8 @@ def sessions(request):
 def my_courses(request):
     """List enrolled courses with textbook and PDF resources."""
     student = _get_profile(request.user)
-    # Future: courses = Course.objects.filter(class_name=student.class_name)
-    context = {'student': student, 'courses': []}
+    courses_qs = Course.objects.filter(class_name=student.class_name, is_active=True) if (student and student.class_name) else Course.objects.filter(is_active=True)
+    context = {'student': student, 'courses': courses_qs}
     return render(request, 'My_Courses(text book &PDF ).html', context)
 
 
@@ -139,7 +188,20 @@ def my_courses(request):
 def student_progress(request):
     """Analytics view showing term-wise performance and competency."""
     student = _get_profile(request.user)
-    context = {'student': student}
+    gpa = 0.0
+    assignments_count = 0
+    if student:
+        marks_qs = Mark.objects.filter(student=student)
+        avg_score = marks_qs.aggregate(Avg('scored'))['scored__avg']
+        if avg_score:
+            gpa = round((float(avg_score) / 100.0) * 4.0, 2)
+        assignments_count = TaskSubmission.objects.filter(student=student).count()
+
+    context = {
+        'student': student,
+        'gpa': gpa,
+        'assignments_count': assignments_count,
+    }
     return render(request, 'Student_Progress.html', context)
 
 
@@ -154,8 +216,24 @@ def tasks(request):
     POST creates a new task.
     """
     student = _get_profile(request.user)
-    # Future: tasks = Task.objects.filter(student=student)
-    context = {'student': student, 'tasks': []}
+
+    if request.method == 'POST' and student:
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        due_date = request.POST.get('due_date') or None
+        if title:
+            Task.objects.create(
+                title=title,
+                description=description,
+                assigned_by=request.user,
+                due_date=due_date,
+                class_name=student.class_name or '',
+            )
+            messages.success(request, 'Task created successfully.')
+            return redirect('tasks')
+
+    tasks_qs = Task.objects.filter(Q(class_name=student.class_name) | Q(assigned_by=request.user)) if student else Task.objects.none()
+    context = {'student': student, 'tasks': tasks_qs}
     return render(request, 'Tasks.html', context)
 
 
@@ -173,11 +251,19 @@ def leave_request(request):
         from_date  = request.POST.get('from_date', '').strip()
         to_date    = request.POST.get('to_date', '').strip()
         reason     = request.POST.get('reason', '').strip()
+        document   = request.FILES.get('document')
 
         if not all([leave_type, from_date, to_date, reason]):
             messages.error(request, 'Please fill in all required fields.')
         else:
-            # Future: LeaveRequest.objects.create(student=student, ...)
+            LeaveRequest.objects.create(
+                student=student,
+                leave_type=leave_type,
+                from_date=from_date,
+                to_date=to_date,
+                reason=reason,
+                document=document,
+            )
             logger.info(
                 "Leave request submitted by %s: %s → %s (%s)",
                 student.enroll_id, from_date, to_date, leave_type
@@ -188,7 +274,8 @@ def leave_request(request):
             )
             return redirect('leave_request')
 
-    context = {'student': student, 'leave_history': []}
+    history = LeaveRequest.objects.filter(student=student) if student else []
+    context = {'student': student, 'leave_history': history}
     return render(request, 'Leave_Request.html', context)
 
 
@@ -200,11 +287,16 @@ def leave_request(request):
 def payment(request):
     """View fee status, outstanding balance, and transaction history."""
     student = _get_profile(request.user)
-    # Future: transactions = FeeTransaction.objects.filter(student=student)
+    transactions = FeeTransaction.objects.filter(student=student) if student else []
+    due_amount = 0
+    for t in transactions:
+        if t.status == 'P':
+            due_amount += t.amount
+
     context = {
         'student': student,
-        'due_amount': 0,          # Replace with real DB value
-        'transactions': [],
+        'due_amount': due_amount,
+        'transactions': transactions,
     }
     return render(request, 'Payment.html', context)
 
@@ -217,8 +309,8 @@ def payment(request):
 def notifications(request):
     """Display all notifications for the student."""
     student = _get_profile(request.user)
-    # Future: notifs = Notification.objects.filter(student=student)
-    context = {'student': student, 'notifications': []}
+    notifs = Notification.objects.filter(Q(recipient=request.user) | Q(recipient__isnull=True))
+    context = {'student': student, 'notifications': notifs}
     return render(request, 'Notifications.html', context)
 
 
@@ -242,7 +334,12 @@ def tickets(request):
         if not all([category, subject, description]):
             messages.error(request, 'Please fill in all required fields.')
         else:
-            # Future: Ticket.objects.create(student=student, ...)
+            Ticket.objects.create(
+                student=student,
+                category=category,
+                subject=subject,
+                description=description,
+            )
             logger.info(
                 "Support ticket raised by %s: [%s] %s",
                 student.enroll_id, category, subject
@@ -253,7 +350,8 @@ def tickets(request):
             )
             return redirect('tickets')
 
-    context = {'student': student, 'tickets': []}
+    tkts = Ticket.objects.filter(student=student) if student else []
+    context = {'student': student, 'tickets': tkts}
     return render(request, 'Tickets.html', context)
 
 
@@ -274,7 +372,12 @@ def contact_us(request):
         if not all([department, subject, message]):
             messages.error(request, 'Please fill in all required fields.')
         else:
-            # Future: ContactMessage.objects.create(...) or send email
+            ContactMessage.objects.create(
+                student=student,
+                department=department,
+                subject=subject,
+                message=message,
+            )
             logger.info(
                 "Contact message from %s to %s: %s",
                 student.enroll_id, department, subject

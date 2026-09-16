@@ -79,7 +79,7 @@
   </nav>
   <div class="suser">
     <div class="avatar">{{ user.username|first|upper|default:"S" }}</div>
-    <div class="uinfo"><div class="uname">{{ user.get_full_name|default:"Student" }}</div><div class="uid">{{ student.enroll_id|default:"STU-2024-001" }}</div></div>
+    <div class="uinfo"><div class="uname">{{ user.get_full_name|default:"Student" }}</div><div class="uid">{{ student.enroll_id|default:"—" }}</div></div>
     <a href="{% url 'logout' %}" class="lout">🚪</a>
   </div>
 </aside>
@@ -99,14 +99,14 @@
           <circle class="ring-bg" cx="50" cy="50" r="45"/>
           <circle class="ring-fg" id="ringFg" cx="50" cy="50" r="45"/>
         </svg>
-        <div class="ring-text"><div class="ring-pct" id="ringPct">{{ attendance_pct|default:"87" }}%</div><div class="ring-sub">Overall</div></div>
+        <div class="ring-text"><div class="ring-pct" id="ringPct">{{ attendance_pct|default:"0" }}%</div><div class="ring-sub">Overall</div></div>
       </div>
       <div class="att-label">Attendance Rate</div>
     </div>
-    <div class="att-card"><div class="att-circle circle-green">{{ present_days|default:"112" }}</div><div class="att-label">Days Present</div></div>
-    <div class="att-card"><div class="att-circle circle-red">{{ absent_days|default:"14" }}</div><div class="att-label">Days Absent</div></div>
-    <div class="att-card"><div class="att-circle circle-yellow">{{ late_days|default:"4" }}</div><div class="att-label">Days Late</div></div>
-    <div class="att-card"><div class="att-circle circle-blue">{{ leave_days|default:"6" }}</div><div class="att-label">On Leave</div></div>
+    <div class="att-card"><div class="att-circle circle-green">{{ present_days|default:"0" }}</div><div class="att-label">Days Present</div></div>
+    <div class="att-card"><div class="att-circle circle-red">{{ absent_days|default:"0" }}</div><div class="att-label">Days Absent</div></div>
+    <div class="att-card"><div class="att-circle circle-yellow">{{ late_days|default:"0" }}</div><div class="att-label">Days Late</div></div>
+    <div class="att-card"><div class="att-circle circle-blue">{{ leave_days|default:"0" }}</div><div class="att-label">On Leave</div></div>
   </div>
 
   <div class="panel">
@@ -116,17 +116,10 @@
       <tbody>
         {% if attendance_log %}
           {% for rec in attendance_log %}
-          <tr><td>{{ rec.date }}</td><td>{{ rec.day }}</td><td>{{ rec.subject }}</td><td><span class="status-pill {{ rec.status_class }}">{{ rec.status }}</span></td><td>{{ rec.remarks|default:"—" }}</td></tr>
+          <tr><td>{{ rec.date }}</td><td>{{ rec.date|date:"l" }}</td><td>{{ rec.subject }}</td><td><span class="status-pill {{ rec.status_class }}">{{ rec.get_status_display }}</span></td><td>{{ rec.remarks|default:"—" }}</td></tr>
           {% endfor %}
         {% else %}
-        <tr><td>22 May 2024</td><td>Wednesday</td><td>Mathematics</td><td><span class="status-pill present">Present</span></td><td>—</td></tr>
-        <tr><td>22 May 2024</td><td>Wednesday</td><td>Physics</td><td><span class="status-pill present">Present</span></td><td>—</td></tr>
-        <tr><td>21 May 2024</td><td>Tuesday</td><td>Chemistry</td><td><span class="status-pill late">Late</span></td><td>10 min delay</td></tr>
-        <tr><td>21 May 2024</td><td>Tuesday</td><td>English</td><td><span class="status-pill present">Present</span></td><td>—</td></tr>
-        <tr><td>20 May 2024</td><td>Monday</td><td>History</td><td><span class="status-pill absent">Absent</span></td><td>Medical</td></tr>
-        <tr><td>20 May 2024</td><td>Monday</td><td>Computer Sc.</td><td><span class="status-pill leave">On Leave</span></td><td>Approved leave</td></tr>
-        <tr><td>17 May 2024</td><td>Friday</td><td>Mathematics</td><td><span class="status-pill present">Present</span></td><td>—</td></tr>
-        <tr><td>16 May 2024</td><td>Thursday</td><td>Physics</td><td><span class="status-pill present">Present</span></td><td>—</td></tr>
+        <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">No attendance records found.</td></tr>
         {% endif %}
       </tbody>
     </table>
@@ -135,7 +128,7 @@
 <script>
   function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show')}
   // Animate ring
-  const pct = parseInt(document.getElementById('ringPct').textContent)||87;
+  const pct = parseInt(document.getElementById('ringPct').textContent)||0;
   const circumference = 2*Math.PI*45;
   const offset = circumference*(1-pct/100);
   document.getElementById('ringFg').style.strokeDashoffset = offset;

@@ -1,30 +1,30 @@
-"""
-URL configuration for protal project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
+
+from students.stud_details.api_urls import student_patterns, admin_patterns
+from staffs.staff.api_urls import staff_patterns
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('students.auth_stud.urls')),
-    path('', include('students.stud_details.urls')),
-    path('staff/', include('staffs.staff.urls')),
+    # ── Root ───────────────────────────────────────────────
+    path('', lambda request: redirect('login', permanent=False)),
+
+    # ── Django Admin ───────────────────────────────────────
+    path('django-admin/', admin.site.urls),
+
+    # ── Django template views (existing) ──────────────────
+    path('student/', include('students.auth_stud.urls')),
+    path('student/', include('students.stud_details.urls')),
+    path('staff/',   include('staffs.staff.urls')),
+
+    # ── REST API v1 ────────────────────────────────────────
+    path('api/v1/student/', include((student_patterns, 'student_api'))),
+    path('api/v1/staff/',   include((staff_patterns,   'staff_api'))),
+    path('api/v1/admin/',   include((admin_patterns,   'admin_api'))),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
