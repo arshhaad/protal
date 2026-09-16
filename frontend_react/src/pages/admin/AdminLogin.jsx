@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthPage from '../../components/AuthPage';
 import { Input, PasswordInput, Button } from '../../components/ui/index';
+import { api, setToken } from '../../services/api';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -10,12 +11,21 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (!email || !password) { setError('Please fill in all fields.'); return; }
     setLoading(true);
-    setTimeout(() => { setLoading(false); navigate('/admin/dashboard'); }, 900);
+    try {
+      const data = await api.adminLogin({ email, password });
+      setToken(data.token);
+      localStorage.setItem('adminUser', JSON.stringify(data));
+      navigate('/admin/dashboard');
+    } catch (err) {
+      setError(err.message || 'Invalid credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

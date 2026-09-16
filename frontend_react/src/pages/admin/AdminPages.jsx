@@ -61,10 +61,10 @@ export function AdminDashboard() {
       <PageHeader title="Admin Dashboard" subtitle="Platform health and key metrics at a glance." />
 
       <div className="dash-grid-4">
-        <StatCard icon="👩‍🎓" label="Total Students" value={String(metrics.total_students)} color="accent" />
-        <StatCard icon="👨‍🏫" label="Active Staff" value={String(metrics.active_staff)} color="info" />
-        <StatCard icon="📚" label="Active Courses" value={String(metrics.active_courses)} color="success" />
-        <StatCard icon="💰" label="Revenue Collected" value={metrics.revenue_collected} color="warning" />
+        <StatCard icon="students" label="Total Students" value={String(metrics.total_students)} color="accent" />
+        <StatCard icon="staff" label="Active Staff" value={String(metrics.active_staff)} color="info" />
+        <StatCard icon="courses" label="Active Courses" value={String(metrics.active_courses)} color="success" />
+        <StatCard icon="payment" label="Revenue Collected" value={metrics.revenue_collected} color="warning" />
       </div>
 
       <div className="dash-grid-2">
@@ -484,9 +484,9 @@ export function AdminPayments() {
       <PageHeader title="Payment Handling" subtitle="View, record and manage student fee payments."
         action={<Button icon="+" onClick={() => setShowModal(true)}>Record Payment</Button>} />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 16 }}>
-        <StatCard icon="💰" label="Total Collected" value="₹0" color="success" />
-        <StatCard icon="⏳" label="Outstanding" value="₹0" color="warning" />
-        <StatCard icon="⚠️" label="Overdue Count" value="0" color="danger" />
+        <StatCard icon="payment" label="Total Collected" value="₹0" color="success" />
+        <StatCard icon="clock" label="Outstanding" value="₹0" color="warning" />
+        <StatCard icon="alert" label="Overdue Count" value="0" color="danger" />
       </div>
       <Card>
         <Table columns={cols} data={txns} empty="No transactions found." />

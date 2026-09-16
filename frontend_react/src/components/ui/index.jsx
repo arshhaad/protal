@@ -1,10 +1,13 @@
 /* ============================================================
    EDUPORTAL — Shared UI Component Library
-   All primitive components: Button, Badge, Card, Input,
-   Table, Modal, Toast, Skeleton, EmptyState, etc.
+   Premium Component Architecture: Button, Badge, Card, StatCard,
+   Input, Table, Modal, Toast, Skeleton, EmptyState, Icon, etc.
    ============================================================ */
 import { useState, useEffect, useRef, createContext, useContext } from 'react';
+import { Icon } from './Icons';
 import './ui.css';
+
+export { Icon };
 
 /* ── BUTTON ──────────────────────────────────────────────── */
 export function Button({
@@ -22,41 +25,67 @@ export function Button({
       {...rest}
     >
       {loading && <span className="btn-spinner" aria-hidden="true" />}
-      {!loading && icon && <span className="btn-icon btn-icon--left" aria-hidden="true">{icon}</span>}
-      {children}
-      {!loading && iconRight && <span className="btn-icon btn-icon--right" aria-hidden="true">{iconRight}</span>}
+      {!loading && icon && (
+        <span className="btn-icon btn-icon--left" aria-hidden="true">
+          {typeof icon === 'string' && !icon.includes('<') && icon.length < 20 ? (
+            ['+', '✓', '✗', '💾', '📢', '⏰', '🚪', '📝'].includes(icon) || icon.charCodeAt(0) > 255 ? (
+              icon === '+' ? <Icon name="plus" size={15} /> :
+              icon === '✓' ? <Icon name="check" size={15} /> :
+              icon === '💾' ? <Icon name="tasks" size={15} /> :
+              icon === '📢' ? <Icon name="announcements" size={15} /> :
+              icon === '⏰' ? <Icon name="clock" size={15} /> :
+              icon === '🚪' ? <Icon name="logout" size={15} /> :
+              <span>{icon}</span>
+            ) : (
+              <Icon name={icon} size={15} />
+            )
+          ) : (
+            icon
+          )}
+        </span>
+      )}
+      <span>{children}</span>
+      {!loading && iconRight && (
+        <span className="btn-icon btn-icon--right" aria-hidden="true">
+          {typeof iconRight === 'string' ? <Icon name={iconRight} size={15} /> : iconRight}
+        </span>
+      )}
     </button>
   );
 }
 
 /* ── BADGE ───────────────────────────────────────────────── */
 const BADGE_VARIANTS = {
-  active:     'badge--success',
-  inactive:   'badge--neutral',
-  pending:    'badge--warning',
-  approved:   'badge--success',
-  rejected:   'badge--danger',
-  paid:       'badge--success',
-  unpaid:     'badge--danger',
-  overdue:    'badge--danger',
-  open:       'badge--info',
-  in_progress:'badge--warning',
-  resolved:   'badge--success',
-  closed:     'badge--neutral',
-  submitted:  'badge--info',
-  graded:     'badge--success',
-  present:    'badge--success',
-  absent:     'badge--danger',
-  late:       'badge--warning',
-  leave:      'badge--info',
-  excellent:  'badge--success',
-  good:       'badge--info',
-  average:    'badge--warning',
-  at_risk:    'badge--danger',
+  active:      'badge--success',
+  inactive:    'badge--neutral',
+  pending:     'badge--warning',
+  approved:    'badge--success',
+  rejected:    'badge--danger',
+  paid:        'badge--success',
+  unpaid:      'badge--danger',
+  overdue:     'badge--danger',
+  open:        'badge--info',
+  in_progress: 'badge--warning',
+  resolved:    'badge--success',
+  closed:      'badge--neutral',
+  submitted:   'badge--info',
+  graded:      'badge--success',
+  present:     'badge--success',
+  absent:      'badge--danger',
+  late:        'badge--warning',
+  leave:       'badge--info',
+  excellent:   'badge--success',
+  good:        'badge--info',
+  average:     'badge--warning',
+  at_risk:     'badge--danger',
+  high:        'badge--danger',
+  medium:      'badge--warning',
+  normal:      'badge--success',
 };
 
 export function Badge({ label, variant, dot = false }) {
-  const cls = BADGE_VARIANTS[variant?.toLowerCase()] || BADGE_VARIANTS[label?.toLowerCase()] || 'badge--neutral';
+  const v = (variant || label || 'neutral').toLowerCase();
+  const cls = BADGE_VARIANTS[v] || 'badge--neutral';
   return (
     <span className={`badge ${cls}`}>
       {dot && <span className="badge-dot" aria-hidden="true" />}
@@ -66,9 +95,9 @@ export function Badge({ label, variant, dot = false }) {
 }
 
 /* ── CARD ────────────────────────────────────────────────── */
-export function Card({ children, className = '', padding = true, hover = false }) {
+export function Card({ children, className = '', padding = true, hover = false, style = {} }) {
   return (
-    <div className={`card ${padding ? 'card--padded' : ''} ${hover ? 'card--hover' : ''} ${className}`}>
+    <div className={`card ${padding ? 'card--padded' : ''} ${hover ? 'card--hover' : ''} ${className}`} style={style}>
       {children}
     </div>
   );
@@ -87,13 +116,44 @@ export function CardHeader({ title, subtitle, action }) {
 }
 
 /* ── STAT CARD ───────────────────────────────────────────── */
-export function StatCard({ icon, label, value, change, changeType = 'neutral', color = 'accent' }) {
+export function StatCard({ icon, label, title, value, change, changeType = 'neutral', color = 'accent' }) {
+  const displayLabel = label || title;
+  const renderIcon = () => {
+    if (!icon) return null;
+    if (typeof icon === 'string') {
+      if (['🎓', '👨‍🏫', '📅', '✅', '🎟️', '📈', '👥', '📚', '📋', '💳', '🗓️', '🏆', '⚠️', '📊'].includes(icon) || icon.length <= 4) {
+        const iconMap = {
+          '🎓': 'students',
+          '👨‍🏫': 'staff',
+          '📅': 'attendance',
+          '✅': 'check',
+          '🎟️': 'tickets',
+          '📈': 'trendingUp',
+          '👥': 'users',
+          '📚': 'courses',
+          '📋': 'tasks',
+          '💳': 'payment',
+          '🗓️': 'calendar',
+          '🏆': 'star',
+          '⚠️': 'tickets',
+          '📊': 'reports',
+        };
+        const iconName = iconMap[icon] || 'sparkles';
+        return <Icon name={iconName} size={22} />;
+      }
+      return <Icon name={icon} size={22} />;
+    }
+    return icon;
+  };
+
   return (
     <div className={`stat-card stat-card--${color}`}>
-      <div className="stat-card__icon" aria-hidden="true">{icon}</div>
+      <div className="stat-card__icon-wrap">
+        <div className="stat-card__icon" aria-hidden="true">{renderIcon()}</div>
+      </div>
       <div className="stat-card__body">
-        <p className="stat-card__label">{label}</p>
-        <p className="stat-card__value">{value}</p>
+        <p className="stat-card__label">{displayLabel}</p>
+        <p className="stat-card__value">{value ?? '0'}</p>
         {change && (
           <p className={`stat-card__change stat-card__change--${changeType}`}>
             {changeType === 'up' ? '↑' : changeType === 'down' ? '↓' : ''} {change}
@@ -118,15 +178,24 @@ export function Input({
         </label>
       )}
       <div className="field-wrap">
-        {icon && <span className="field-icon field-icon--left" aria-hidden="true">{icon}</span>}
+        {icon && (
+          <span className="field-icon field-icon--left" aria-hidden="true">
+            {typeof icon === 'string' ? <Icon name={icon} size={16} /> : icon}
+          </span>
+        )}
         <input
           id={id}
           className={`field-input ${icon ? 'field-input--icon-left' : ''} ${iconRight ? 'field-input--icon-right' : ''}`}
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+          required={required}
           {...rest}
         />
-        {iconRight && <span className="field-icon field-icon--right" aria-hidden="true">{iconRight}</span>}
+        {iconRight && (
+          <span className="field-icon field-icon--right" aria-hidden="true">
+            {typeof iconRight === 'string' ? <Icon name={iconRight} size={16} /> : iconRight}
+          </span>
+        )}
       </div>
       {hint && !error && <p className="field-hint" id={`${id}-hint`}>{hint}</p>}
       {error && <p className="field-error" id={`${id}-error`} role="alert">{error}</p>}
@@ -134,7 +203,7 @@ export function Input({
   );
 }
 
-export function Select({ label, id, error, hint, children, required, className = '', ...rest }) {
+export function Select({ label, id, error, hint, children, required, className = '', options, ...rest }) {
   return (
     <div className={`field ${error ? 'field--error' : ''} ${className}`}>
       {label && (
@@ -144,10 +213,20 @@ export function Select({ label, id, error, hint, children, required, className =
         </label>
       )}
       <div className="field-wrap">
-        <select id={id} className="field-input field-select" {...rest}>
-          {children}
+        <select id={id} className="field-input field-select" aria-invalid={!!error} required={required} {...rest}>
+          {options ? (
+            options.map((opt, i) => (
+              <option key={opt.value ?? i} value={opt.value}>
+                {opt.label ?? opt.value}
+              </option>
+            ))
+          ) : (
+            children
+          )}
         </select>
-        <span className="field-icon field-icon--right select-arrow" aria-hidden="true">▾</span>
+        <span className="field-icon field-icon--right select-arrow" aria-hidden="true">
+          <Icon name="chevronDown" size={14} />
+        </span>
       </div>
       {hint && !error && <p className="field-hint">{hint}</p>}
       {error && <p className="field-error" role="alert">{error}</p>}
@@ -168,6 +247,7 @@ export function Textarea({ label, id, error, hint, required, className = '', ...
         id={id}
         className="field-input field-textarea"
         aria-invalid={!!error}
+        required={required}
         {...rest}
       />
       {hint && !error && <p className="field-hint">{hint}</p>}
@@ -188,12 +268,15 @@ export function PasswordInput({ label, id, error, hint, required, className = ''
         </label>
       )}
       <div className="field-wrap">
-        <span className="field-icon field-icon--left" aria-hidden="true">🔒</span>
+        <span className="field-icon field-icon--left" aria-hidden="true">
+          <Icon name="lock" size={16} />
+        </span>
         <input
           id={id}
           type={show ? 'text' : 'password'}
           className="field-input field-input--icon-left field-input--icon-right"
           aria-invalid={!!error}
+          required={required}
           {...rest}
         />
         <button
@@ -202,7 +285,7 @@ export function PasswordInput({ label, id, error, hint, required, className = ''
           onClick={() => setShow(s => !s)}
           aria-label={show ? 'Hide password' : 'Show password'}
         >
-          {show ? '🙈' : '👁️'}
+          <Icon name="eye" size={16} />
         </button>
       </div>
       {hint && !error && <p className="field-hint">{hint}</p>}
@@ -212,12 +295,12 @@ export function PasswordInput({ label, id, error, hint, required, className = ''
 }
 
 /* ── TABLE ───────────────────────────────────────────────── */
-export function Table({ columns, data, loading = false, empty = 'No data found.', emptyAction }) {
+export function Table({ columns, data, loading = false, empty = 'No records found.', emptyAction }) {
   if (loading) {
     return (
       <div className="table-wrap">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="skeleton" style={{ height: 44, marginBottom: 6 }} />
+          <div key={i} className="skeleton" style={{ height: 48, marginBottom: 8, borderRadius: 8 }} />
         ))}
       </div>
     );
@@ -226,7 +309,7 @@ export function Table({ columns, data, loading = false, empty = 'No data found.'
   if (!data?.length) {
     return (
       <EmptyState
-        icon="📋"
+        icon="tasks"
         title={typeof empty === 'string' ? empty : 'No records found'}
         action={emptyAction}
       />
@@ -239,7 +322,7 @@ export function Table({ columns, data, loading = false, empty = 'No data found.'
         <thead>
           <tr>
             {columns.map(col => (
-              <th key={col.key} style={col.width ? { width: col.width } : {}}>
+              <th key={col.key || col.label} style={col.width ? { width: col.width } : {}}>
                 {col.label}
               </th>
             ))}
@@ -249,7 +332,7 @@ export function Table({ columns, data, loading = false, empty = 'No data found.'
           {data.map((row, i) => (
             <tr key={row.id ?? i}>
               {columns.map(col => (
-                <td key={col.key} data-label={col.label}>
+                <td key={col.key || col.label} data-label={col.label}>
                   {col.render ? col.render(row[col.key], row) : (row[col.key] ?? '—')}
                 </td>
               ))}
@@ -282,7 +365,9 @@ export function Modal({ open, onClose, title, children, size = 'md', footer }) {
       <div className={`modal modal--${size}`}>
         <div className="modal-header">
           <h2 className="modal-title" id="modal-title">{title}</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close modal">✕</button>
+          <button className="modal-close" onClick={onClose} aria-label="Close modal">
+            <Icon name="x" size={18} />
+          </button>
         </div>
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-footer">{footer}</div>}
@@ -296,6 +381,7 @@ const ToastContext = createContext(null);
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
+  const lastValidationToast = useRef(0);
 
   const add = (msg, type = 'success', duration = 4000) => {
     const id = Date.now();
@@ -305,6 +391,28 @@ export function ToastProvider({ children }) {
 
   const remove = (id) => setToasts(t => t.filter(x => x.id !== id));
 
+  useEffect(() => {
+    const handleToast = (event) => {
+      const { message, type = 'info', duration } = event.detail || {};
+      if (message) add(message, type, duration);
+    };
+    const handleInvalid = (event) => {
+      // Native validation also applies to inputs inside modals and forms whose
+      // submit button is rendered in a modal footer.
+      if (Date.now() - lastValidationToast.current < 750) return;
+      lastValidationToast.current = Date.now();
+      const field = event.target;
+      const label = field.labels?.[0]?.textContent?.replace('*', '').trim() || field.name || 'field';
+      add(field.validationMessage || `Please enter a valid ${label}.`, 'error');
+    };
+    window.addEventListener('portal:toast', handleToast);
+    document.addEventListener('invalid', handleInvalid, true);
+    return () => {
+      window.removeEventListener('portal:toast', handleToast);
+      document.removeEventListener('invalid', handleInvalid, true);
+    };
+  }, []);
+
   return (
     <ToastContext.Provider value={add}>
       {children}
@@ -312,10 +420,14 @@ export function ToastProvider({ children }) {
         {toasts.map(t => (
           <div key={t.id} className={`toast toast--${t.type}`} role="alert">
             <span className="toast-icon">
-              {t.type === 'success' ? '✓' : t.type === 'error' ? '✕' : t.type === 'warning' ? '⚠' : 'ℹ'}
+              {t.type === 'success' ? <Icon name="check" size={16} /> :
+               t.type === 'error' ? <Icon name="x" size={16} /> :
+               <Icon name="announcements" size={16} />}
             </span>
             <span className="toast-msg">{t.msg}</span>
-            <button className="toast-close" onClick={() => remove(t.id)} aria-label="Dismiss">✕</button>
+            <button className="toast-close" onClick={() => remove(t.id)} aria-label="Dismiss">
+              <Icon name="x" size={14} />
+            </button>
           </div>
         ))}
       </div>
@@ -329,13 +441,43 @@ export const useToast = () => {
   return ctx;
 };
 
+// Lets non-React code (the API client) show the same accessible notification.
+export function showToast(message, type = 'success', duration = 4000) {
+  window.dispatchEvent(new CustomEvent('portal:toast', { detail: { message, type, duration } }));
+}
+
 /* ── EMPTY STATE ─────────────────────────────────────────── */
-export function EmptyState({ icon, title, description, action }) {
+export function EmptyState({ icon = 'tasks', title, subtitle, description, action }) {
+  const desc = description || subtitle;
+  const renderIcon = () => {
+    if (typeof icon === 'string') {
+      if (['👥', '📋', '🔔', '📚', '🎟️', '🎓', '👨‍🏫', '💳', '🗓️', '📅'].includes(icon)) {
+        const map = {
+          '👥': 'users',
+          '📋': 'tasks',
+          '🔔': 'announcements',
+          '📚': 'courses',
+          '🎟️': 'tickets',
+          '🎓': 'students',
+          '👨‍🏫': 'staff',
+          '💳': 'payment',
+          '🗓️': 'leave',
+          '📅': 'calendar',
+        };
+        return <Icon name={map[icon] || 'sparkles'} size={32} />;
+      }
+      return <Icon name={icon} size={32} />;
+    }
+    return icon;
+  };
+
   return (
     <div className="empty-state">
-      {icon && <div className="empty-state__icon" aria-hidden="true">{icon}</div>}
+      <div className="empty-state__icon-halo">
+        <div className="empty-state__icon">{renderIcon()}</div>
+      </div>
       <h3 className="empty-state__title">{title}</h3>
-      {description && <p className="empty-state__desc">{description}</p>}
+      {desc && <p className="empty-state__desc">{desc}</p>}
       {action && <div className="empty-state__action">{action}</div>}
     </div>
   );
@@ -357,15 +499,17 @@ export function SkeletonRows({ rows = 5, cols = 4 }) {
 }
 
 /* ── SEARCH INPUT ────────────────────────────────────────── */
-export function SearchInput({ value, onChange, placeholder = 'Search…', className = '' }) {
+export function SearchInput({ value, onChange, placeholder = 'Search…', className = '', style = {} }) {
   return (
-    <div className={`search-input ${className}`}>
-      <span className="search-input__icon" aria-hidden="true">🔍</span>
+    <div className={`search-input ${className}`} style={style}>
+      <span className="search-input__icon" aria-hidden="true">
+        <Icon name="search" size={16} />
+      </span>
       <input
         type="search"
         className="search-input__field"
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={typeof onChange === 'function' ? (e => onChange(e.target ? e.target.value : e)) : undefined}
         placeholder={placeholder}
         aria-label={placeholder}
       />
@@ -379,14 +523,14 @@ export function Tabs({ tabs, active, onChange }) {
     <div className="tabs" role="tablist">
       {tabs.map(tab => (
         <button
-          key={tab.value}
+          key={tab.value || tab.key}
           role="tab"
-          aria-selected={active === tab.value}
-          className={`tab ${active === tab.value ? 'tab--active' : ''}`}
-          onClick={() => onChange(tab.value)}
+          aria-selected={active === (tab.value || tab.key)}
+          className={`tab ${active === (tab.value || tab.key) ? 'tab--active' : ''}`}
+          onClick={() => onChange(tab.value || tab.key)}
         >
-          {tab.icon && <span aria-hidden="true">{tab.icon}</span>}
-          {tab.label}
+          {tab.icon && <span className="tab-icon">{typeof tab.icon === 'string' ? <Icon name={tab.icon} size={14} /> : tab.icon}</span>}
+          <span>{tab.label}</span>
           {tab.count != null && <span className="tab-count">{tab.count}</span>}
         </button>
       ))}
@@ -462,11 +606,4 @@ export function ProgressBar({ value, max = 100, color = 'accent', label, size = 
       </div>
     </div>
   );
-}
-
-/* ── THEME TOGGLE ────────────────────────────────────────── */
-export function ThemeToggle() {
-  // Imported separately per layout to avoid circular deps
-  // This is a placeholder — actual component in ThemeToggle.jsx
-  return null;
 }

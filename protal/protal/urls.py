@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 
 from students.stud_details.api_urls import student_patterns, admin_patterns
 from staffs.staff.api_urls import staff_patterns
+from staffs.staff.hm_api_urls import hm_patterns
 
 urlpatterns = [
     # ── Root ───────────────────────────────────────────────
@@ -22,6 +23,7 @@ urlpatterns = [
     # ── REST API v1 ────────────────────────────────────────
     path('api/v1/student/', include((student_patterns, 'student_api'))),
     path('api/v1/staff/',   include((staff_patterns,   'staff_api'))),
+    path('api/v1/hm/',      include((hm_patterns,      'hm_api'))),
     path('api/v1/admin/',   include((admin_patterns,   'admin_api'))),
 ]
 

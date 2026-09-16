@@ -85,7 +85,34 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 8px;
+  padding: 12px 8px 24px;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.28) transparent;
+}
+
+/* Custom left sidebar scrollbar */
+.sidebar__nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar__nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar__nav::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+  transition: background var(--transition);
+}
+
+.sidebar__nav:hover::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+}
+
+.sidebar__nav::-webkit-scrollbar-thumb:hover {
+  background: var(--item-accent, var(--accent));
 }
 
 .sidebar__section-label {
@@ -162,13 +189,17 @@
 
 /* ── Sidebar user ── */
 .sidebar__user {
-  padding: 14px 12px;
+  padding: 12px 14px;
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
-  min-height: 64px;
+  min-height: 60px;
+  background: var(--sidebar-bg);
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .sidebar__user-info {

@@ -49,57 +49,56 @@ export function HMDashboard() {
       .catch(() => {});
   }, []);
 
-  const demoPerf = [
-    { month: 'Mar', avg: 72 }, { month: 'Apr', avg: 75 }, { month: 'May', avg: 68 },
-    { month: 'Jun', avg: 80 }, { month: 'Jul', avg: 78 }, { month: 'Aug', avg: 82 },
-  ];
-  const demoAtt = [
-    { week: 'W1', students: 91, staff: 96 }, { week: 'W2', students: 88, staff: 97 },
-    { week: 'W3', students: 93, staff: 95 }, { week: 'W4', students: 90, staff: 98 },
-  ];
-
-  const chartData = performanceData.length ? performanceData : demoPerf;
-  const attData = attendanceData.length ? attendanceData : demoAtt;
+  const chartData = performanceData;
+  const attData = attendanceData;
 
   return (
     <Section>
       <PageHeader title="HM Overview" subtitle="Institution-wide academic and operational snapshot." />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(170px,1fr))', gap: 16 }}>
-        <StatCard title="Total Students" value={stats.totalStudents || 412} icon="🎓" color="#0d9488" />
-        <StatCard title="Total Staff" value={stats.totalStaff || 38} icon="👨‍🏫" color="#6366f1" />
-        <StatCard title="Avg Attendance" value={`${stats.avgAttendance || 91}%`} icon="📅" color="#10b981" />
-        <StatCard title="Pending Leave" value={stats.pendingLeave || 4} icon="✅" color="#f59e0b" />
-        <StatCard title="Open Tickets" value={stats.openTickets || 6} icon="🎟️" color="#ef4444" />
-        <StatCard title="Pass Rate" value={`${stats.passRate || 88}%`} icon="📈" color="#8b5cf6" />
+        <StatCard title="Total Students" value={stats.totalStudents} icon="students" color="accent" />
+        <StatCard title="Total Staff" value={stats.totalStaff} icon="staff" color="info" />
+        <StatCard title="Avg Attendance" value={`${stats.avgAttendance}%`} icon="attendance" color="success" />
+        <StatCard title="Pending Leave" value={stats.pendingLeave} icon="leave" color="warning" />
+        <StatCard title="Open Tickets" value={stats.openTickets} icon="tickets" color="danger" />
+        <StatCard title="Pass Rate" value={`${stats.passRate}%`} icon="reports" color="accent" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
         <Card>
           <CardHeader title="Student Performance Trend" />
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis domain={[50, 100]} tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="avg" stroke="#0d9488" strokeWidth={2} dot={{ r: 4 }} name="Avg Score" />
-            </LineChart>
-          </ResponsiveContainer>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis domain={[50, 100]} tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Line type="monotone" dataKey="avg" stroke="#4f46e5" strokeWidth={2.5} dot={{ r: 4 }} name="Avg Score" />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState icon="reports" title="No performance trend data" subtitle="Trends will display once term exams and assessments are graded." />
+          )}
         </Card>
         <Card>
           <CardHeader title="Attendance Overview" />
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={attData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="week" tick={{ fontSize: 12 }} />
-              <YAxis domain={[60, 100]} tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="students" fill="#0d9488" name="Students %" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="staff" fill="#6366f1" name="Staff %" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          {attData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={attData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="week" tick={{ fontSize: 12 }} />
+                <YAxis domain={[60, 100]} tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="students" fill="#4f46e5" name="Students %" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="staff" fill="#06b6d4" name="Staff %" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState icon="calendar" title="No attendance logs" subtitle="Weekly attendance records will show as attendance is submitted." />
+          )}
         </Card>
       </div>
     </Section>
@@ -109,27 +108,30 @@ export function HMDashboard() {
 /* ════════════════════════════════════════════
    STAFF OVERSIGHT (HM CAN ADD & MANAGE STAFF)
 ════════════════════════════════════════════ */
-const DEFAULT_STAFF = [
-  { id: 1, full_name: 'Dr. Robert Vance', name: 'Dr. Robert Vance', emp_id: 'EMP-101', email: 'robert.vance@school.edu', phone: '+91 98765 22001', department: 'Mathematics', designation: 'Head of Department', classes_assigned: 'Class 10-A, 11-A', attendance: 96, performance_score: 4.8, status: 'Active', joined: '2021-06-15' },
-  { id: 2, full_name: 'Dr. Elena Rostova', name: 'Dr. Elena Rostova', emp_id: 'EMP-102', email: 'elena.rostova@school.edu', phone: '+91 98765 22002', department: 'Physics', designation: 'Senior Lecturer', classes_assigned: 'Class 10-A, 12-A', attendance: 92, performance_score: 4.6, status: 'Active', joined: '2022-01-10' },
-  { id: 3, full_name: 'Prof. Marcus Chen', name: 'Prof. Marcus Chen', emp_id: 'EMP-103', email: 'marcus.chen@school.edu', phone: '+91 98765 22003', department: 'Chemistry', designation: 'Lecturer', classes_assigned: 'Class 10-B, 11-B', attendance: 88, performance_score: 4.2, status: 'Active', joined: '2022-08-20' },
-  { id: 4, full_name: 'Sarah Jenkins', name: 'Sarah Jenkins', emp_id: 'EMP-104', email: 'sarah.j@school.edu', phone: '+91 98765 22004', department: 'English Literature', designation: 'Assistant Professor', classes_assigned: 'Class 10-A, 10-B', attendance: 94, performance_score: 4.5, status: 'Active', joined: '2023-03-01' },
-  { id: 5, full_name: 'David Miller', name: 'David Miller', emp_id: 'EMP-105', email: 'david.m@school.edu', phone: '+91 98765 22005', department: 'Computer Science', designation: 'Lecturer & IT Lead', classes_assigned: 'Class 11-A, 12-A', attendance: 95, performance_score: 4.7, status: 'Active', joined: '2023-07-15' },
-];
-
 export function HMStaffOversight() {
+  const [activeTab, setActiveTab] = useState('directory');
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showRecordAttendanceModal, setShowRecordAttendanceModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [editStaff, setEditStaff] = useState(null);
   const [successMsg, setSuccessMsg] = useState('');
+  const [attendanceDateFilter, setAttendanceDateFilter] = useState(new Date().toISOString().split('T')[0]);
 
   const [staff, setStaff] = useState(() => {
     try {
       const stored = localStorage.getItem('portal_staff_db');
       if (stored) return JSON.parse(stored);
     } catch (e) {}
-    return DEFAULT_STAFF;
+    return [];
+  });
+
+  const [attendanceLogs, setAttendanceLogs] = useState(() => {
+    try {
+      const stored = localStorage.getItem('portal_staff_attendance_db');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return [];
   });
 
   useEffect(() => {
@@ -150,7 +152,127 @@ export function HMStaffOversight() {
         }
       })
       .catch(() => {});
+
+    api.getHMStaffAttendance()
+      .then(res => {
+        const data = Array.isArray(res) ? res : res?.results || [];
+        if (data.length > 0) {
+          setAttendanceLogs(prev => {
+            const combined = [...data];
+            prev.forEach(p => {
+              if (!combined.some(c => c.id === p.id)) {
+                combined.push(p);
+              }
+            });
+            localStorage.setItem('portal_staff_attendance_db', JSON.stringify(combined));
+            return combined;
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  const handleRecordAttendance = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const staffId = fd.get('staff_id');
+    const selectedMember = staff.find(s => String(s.id) === String(staffId) || s.emp_id === staffId);
+
+    const cinRaw = fd.get('check_in') || '09:00 AM';
+    const coutRaw = fd.get('check_out') || '05:00 PM';
+    const dateVal = fd.get('date') || new Date().toISOString().split('T')[0];
+    const statusVal = fd.get('status') || 'Present';
+    const hoursVal = fd.get('total_hours') || '8h 00m';
+
+    const payload = {
+      id: Date.now(),
+      staff_id: selectedMember ? selectedMember.id : Date.now(),
+      staff_name: selectedMember ? (selectedMember.full_name || selectedMember.name) : (fd.get('staff_name') || 'Faculty Member'),
+      emp_id: selectedMember ? selectedMember.emp_id : `EMP-${Math.floor(100 + Math.random()*900)}`,
+      department: selectedMember ? (selectedMember.department || selectedMember.subject || 'Academics') : 'Academics',
+      date: dateVal,
+      check_in: cinRaw,
+      check_out: coutRaw,
+      total_hours: hoursVal,
+      status: statusVal,
+      recorded_by: 'HM Administration',
+    };
+
+    try {
+      await api.createHMStaffAttendance(payload);
+    } catch (err) {}
+
+    const updated = [payload, ...attendanceLogs.filter(a => !(a.date === payload.date && a.emp_id === payload.emp_id))];
+    setAttendanceLogs(updated);
+    try {
+      localStorage.setItem('portal_staff_attendance_db', JSON.stringify(updated));
+    } catch (e) {}
+
+    setShowRecordAttendanceModal(false);
+    setSuccessMsg(`✓ Attendance logged for ${payload.staff_name} on ${payload.date} (${payload.check_in} – ${payload.check_out})!`);
+    setTimeout(() => setSuccessMsg(''), 4000);
+  };
+
+  const handleToggleStaffStatus = async (record, newStatus) => {
+    const isLeave = newStatus.toLowerCase().includes('leave');
+    const isPresent = newStatus.toLowerCase() === 'present';
+    const isAbsent = newStatus.toLowerCase() === 'absent';
+
+    let updatedCin = record.check_in;
+    let updatedCout = record.check_out;
+    let updatedHours = record.total_hours;
+
+    if (isLeave) {
+      updatedCin = '—';
+      updatedCout = '—';
+      updatedHours = 'On Leave';
+    } else if (isPresent && (!updatedCin || updatedCin === '—')) {
+      updatedCin = '08:45 AM';
+      updatedCout = '05:15 PM';
+      updatedHours = '8h 30m';
+    } else if (isAbsent) {
+      updatedCin = '—';
+      updatedCout = '—';
+      updatedHours = '0h 00m';
+    }
+
+    const updatedRecord = {
+      ...record,
+      status: newStatus,
+      status_raw: isLeave ? 'leave' : isPresent ? 'present' : isAbsent ? 'absent' : 'present',
+      check_in: updatedCin,
+      check_out: updatedCout,
+      total_hours: updatedHours,
+      recorded_by: 'HM Administration',
+    };
+
+    try {
+      await api.createHMStaffAttendance(updatedRecord);
+    } catch (e) {}
+
+    const updated = attendanceLogs.map(a => (a.id === record.id || (a.date === record.date && a.emp_id === record.emp_id)) ? updatedRecord : a);
+    setAttendanceLogs(updated);
+    try {
+      localStorage.setItem('portal_staff_attendance_db', JSON.stringify(updated));
+    } catch (e) {}
+
+    setSuccessMsg(`✓ Marked ${record.staff_name || 'Staff Member'} as ${newStatus}!`);
+    setTimeout(() => setSuccessMsg(''), 3500);
+  };
+
+  const handleDeleteAttendance = async (id, staffName) => {
+    if (!window.confirm(`Delete attendance entry for ${staffName}?`)) return;
+    try {
+      await api.deleteHMStaffAttendance(id);
+    } catch (e) {}
+    const updated = attendanceLogs.filter(a => a.id !== id);
+    setAttendanceLogs(updated);
+    try {
+      localStorage.setItem('portal_staff_attendance_db', JSON.stringify(updated));
+    } catch (e) {}
+    setSuccessMsg(`✓ Attendance entry deleted.`);
+    setTimeout(() => setSuccessMsg(''), 3000);
+  };
 
   const handleAddStaff = async (e) => {
     e.preventDefault();
@@ -158,9 +280,12 @@ export function HMStaffOversight() {
     const newMember = {
       id: Date.now(),
       full_name: fd.get('full_name'),
+      username: fd.get('username'),
       name: fd.get('full_name'),
       emp_id: fd.get('emp_id') || `EMP-${Math.floor(100 + Math.random() * 900)}`,
       email: fd.get('email') || `${fd.get('emp_id')?.toLowerCase()}@school.edu`,
+      password1: fd.get('password1'),
+      password2: fd.get('password2'),
       phone: fd.get('phone') || '',
       department: fd.get('department'),
       designation: fd.get('designation') || 'Lecturer',
@@ -171,7 +296,7 @@ export function HMStaffOversight() {
       joined: new Date().toISOString().split('T')[0],
     };
 
-    try { await api.createHMStaff(newMember); } catch (err) {}
+    try { await api.createHMStaff(newMember); } catch (err) { return; }
 
     const updated = [newMember, ...staff];
     setStaff(updated);
@@ -227,11 +352,22 @@ export function HMStaffOversight() {
     setTimeout(() => setSuccessMsg(''), 4000);
   };
 
-  const filtered = staff.filter(s =>
+  const filteredStaff = staff.filter(s =>
     `${s.name || s.full_name || ''} ${s.subject || s.department || ''} ${s.emp_id || ''}`.toLowerCase().includes(search.toLowerCase())
   );
 
-  const cols = [
+  const filteredAttendance = attendanceLogs.filter(a => {
+    const matchSearch = `${a.staff_name || ''} ${a.emp_id || ''} ${a.department || ''}`.toLowerCase().includes(search.toLowerCase());
+    const matchDate = !attendanceDateFilter || a.date === attendanceDateFilter;
+    return matchSearch && matchDate;
+  });
+
+  const presentCount = attendanceLogs.filter(a => (!attendanceDateFilter || a.date === attendanceDateFilter) && (a.status === 'Present' || a.status_raw === 'present')).length;
+  const leaveCount = attendanceLogs.filter(a => (!attendanceDateFilter || a.date === attendanceDateFilter) && (a.status === 'On Leave' || a.status === 'Leave' || a.status_raw === 'leave')).length;
+  const lateCount = attendanceLogs.filter(a => (!attendanceDateFilter || a.date === attendanceDateFilter) && (a.status === 'Late' || a.status === 'Half Day' || a.status_raw === 'half_day')).length;
+  const absentCount = attendanceLogs.filter(a => (!attendanceDateFilter || a.date === attendanceDateFilter) && (a.status === 'Absent' || a.status_raw === 'absent')).length;
+
+  const staffCols = [
     { key: 'name', label: 'Faculty Member', render: (v, r) => (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <Avatar name={v || r.full_name || 'Staff'} size="sm" />
@@ -256,12 +392,126 @@ export function HMStaffOversight() {
     )},
   ];
 
+  const attendanceCols = [
+    { key: 'staff_name', label: 'Faculty Member', render: (v, r) => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Avatar name={v || 'Staff'} size="sm" />
+        <div>
+          <div style={{ fontWeight: 600 }}>{v}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{r.department || 'Academics'}</div>
+        </div>
+      </div>
+    )},
+    { key: 'emp_id', label: 'Emp ID', render: v => <Badge label={v || '—'} variant="info" /> },
+    { key: 'date', label: 'Date', render: v => <span style={{ fontWeight: 500 }}>{v}</span> },
+    { key: 'check_in', label: 'Check-In Time', render: v => (
+      <span style={{ color: v && v !== '—' ? 'var(--success)' : 'var(--text-muted)', fontWeight: 600 }}>
+        {v || '—'}
+      </span>
+    )},
+    { key: 'check_out', label: 'Check-Out Time', render: v => (
+      <span style={{ color: v && v !== '—' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600 }}>
+        {v || '—'}
+      </span>
+    )},
+    { key: 'total_hours', label: 'Hours Logged', render: v => <Badge label={v || '8h 00m'} variant="info" /> },
+    { key: 'status', label: 'Status / Mark Attendance', render: (v, r) => {
+      const current = (r.status || v || 'Present').toLowerCase();
+      const isPresent = current === 'present';
+      const isLeave = current === 'on leave' || current === 'leave';
+
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => handleToggleStaffStatus(r, 'Present')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '4px 10px',
+              borderRadius: 'var(--radius-full)',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              border: isPresent ? '1px solid #10b981' : '1px solid var(--border)',
+              background: isPresent ? 'rgba(16, 185, 129, 0.18)' : 'var(--bg-subtle)',
+              color: isPresent ? '#10b981' : 'var(--text-muted)',
+              transition: 'all 0.15s ease',
+            }}
+            title="Mark Present"
+          >
+            <span style={{ fontSize: 10 }}>●</span> Present
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleToggleStaffStatus(r, 'On Leave')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '4px 10px',
+              borderRadius: 'var(--radius-full)',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              border: isLeave ? '1px solid #f59e0b' : '1px solid var(--border)',
+              background: isLeave ? 'rgba(245, 158, 11, 0.18)' : 'var(--bg-subtle)',
+              color: isLeave ? '#f59e0b' : 'var(--text-muted)',
+              transition: 'all 0.15s ease',
+            }}
+            title="Mark On Leave"
+          >
+            <span style={{ fontSize: 11 }}>🗓</span> Leave
+          </button>
+
+          <select
+            value={r.status || 'Present'}
+            onChange={(e) => handleToggleStaffStatus(r, e.target.value)}
+            style={{
+              padding: '3px 6px',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: 11,
+              border: '1px solid var(--border)',
+              background: 'var(--bg-subtle)',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              outline: 'none',
+            }}
+            title="Select status"
+          >
+            <option value="Present">Present</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Late">Late</option>
+            <option value="Half Day">Half Day</option>
+            <option value="Absent">Absent</option>
+          </select>
+        </div>
+      );
+    }},
+    { key: 'recorded_by', label: 'Logged By', render: v => <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{v || 'HM Admin'}</span> },
+    { key: 'actions', label: 'Action', render: (_, r) => (
+      <Button size="sm" variant="ghost" onClick={() => handleDeleteAttendance(r.id, r.staff_name)}>
+        Delete
+      </Button>
+    )},
+  ];
+
   return (
     <Section>
       <PageHeader
-        title="Staff Oversight & Management"
-        subtitle="Add new faculty, assign departments, and manage teacher performance."
-        action={<Button icon="+" onClick={() => setShowAddModal(true)}>Add Faculty</Button>}
+        title="Staff Oversight & Attendance"
+        subtitle="Manage faculty directory, view real-time check-in / check-out times, and record attendance."
+        action={
+          <div style={{ display: 'flex', gap: 10 }}>
+            {activeTab === 'directory' ? (
+              <Button icon="plus" onClick={() => setShowAddModal(true)}>Add Faculty</Button>
+            ) : (
+              <Button icon="clock" onClick={() => setShowRecordAttendanceModal(true)}>Record Attendance for Staff</Button>
+            )}
+          </div>
+        }
       />
 
       {successMsg && (
@@ -270,13 +520,137 @@ export function HMStaffOversight() {
         </div>
       )}
 
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-          <SearchInput placeholder="Search faculty by name, department, or Emp ID…" value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 340 }} />
-          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Faculty Count: <strong>{filtered.length} Teachers</strong></div>
+      <Tabs
+        tabs={[
+          { key: 'directory', label: `Faculty Directory (${staff.length})` },
+          { key: 'attendance', label: `Staff Attendance & Check-In/Out (${attendanceLogs.length})` },
+        ]}
+        active={activeTab}
+        onChange={setActiveTab}
+      />
+
+      {activeTab === 'directory' ? (
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+            <SearchInput placeholder="Search faculty by name, department, or Emp ID…" value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 340 }} />
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Faculty Count: <strong>{filteredStaff.length} Teachers</strong></div>
+          </div>
+          <Table columns={staffCols} data={filteredStaff} empty="No staff records found." />
+        </Card>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Quick Metrics */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+            <StatCard icon="staff" label="Total Faculty" value={staff.length || attendanceLogs.length} color="accent" />
+            <StatCard icon="check" label="Present on Selected Date" value={presentCount} color="success" />
+            <StatCard icon="leave" label="On Leave" value={leaveCount} color="warning" />
+            <StatCard icon="alert" label="Absent" value={absentCount} color="danger" />
+          </div>
+
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                <SearchInput placeholder="Search staff name or Emp ID…" value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 280 }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Filter Date:</label>
+                  <input
+                    type="date"
+                    className="field-input"
+                    style={{ padding: '6px 10px', fontSize: 13, borderRadius: 'var(--radius-md)' }}
+                    value={attendanceDateFilter}
+                    onChange={e => setAttendanceDateFilter(e.target.value)}
+                  />
+                  {attendanceDateFilter && (
+                    <Button size="sm" variant="ghost" onClick={() => setAttendanceDateFilter('')}>Show All Dates</Button>
+                  )}
+                </div>
+              </div>
+              <Button size="sm" variant="primary" icon="plus" onClick={() => setShowRecordAttendanceModal(true)}>
+                Record Staff Attendance
+              </Button>
+            </div>
+
+            <Table columns={attendanceCols} data={filteredAttendance} empty={`No attendance logs recorded for ${attendanceDateFilter || 'any date'}.`} />
+          </Card>
         </div>
-        <Table columns={cols} data={filtered} empty="No staff records found." />
-      </Card>
+      )}
+
+      {/* Record Staff Attendance Modal (HM Can Add Attendance) */}
+      <Modal
+        open={showRecordAttendanceModal}
+        onClose={() => setShowRecordAttendanceModal(false)}
+        title="Record Staff Attendance & Timings"
+        footer={
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Button variant="ghost" onClick={() => setShowRecordAttendanceModal(false)}>Cancel</Button>
+            <Button type="submit" form="record-staff-att-form">Save Attendance Entry</Button>
+          </div>
+        }
+      >
+        <form id="record-staff-att-form" onSubmit={handleRecordAttendance}>
+          <div className="form-grid">
+            {staff.length > 0 ? (
+              <Select
+                label="Select Faculty Member"
+                name="staff_id"
+                required
+                className="form-col-span"
+                options={staff.map(s => ({
+                  value: s.id,
+                  label: `${s.full_name || s.name} (${s.emp_id || 'EMP'}) — ${s.department || 'Academics'}`,
+                }))}
+              />
+            ) : (
+              <Input label="Staff Member Name" name="staff_name" placeholder="e.g. Dr. Arthur Sterling" required className="form-col-span" />
+            )}
+
+            <Input
+              label="Attendance Date"
+              name="date"
+              type="date"
+              defaultValue={new Date().toISOString().split('T')[0]}
+              required
+            />
+
+            <Select
+              label="Attendance Status"
+              name="status"
+              defaultValue="Present"
+              options={[
+                { value: 'Present', label: 'Present (On Time)' },
+                { value: 'On Leave', label: 'On Leave (Leave)' },
+                { value: 'Late', label: 'Late Arrival' },
+                { value: 'Half Day', label: 'Half Day' },
+                { value: 'Absent', label: 'Absent' },
+              ]}
+            />
+
+            <Input
+              label="Check-In Time"
+              name="check_in"
+              defaultValue="08:45 AM"
+              placeholder="e.g. 08:45 AM"
+              required
+            />
+
+            <Input
+              label="Check-Out Time"
+              name="check_out"
+              defaultValue="05:15 PM"
+              placeholder="e.g. 05:15 PM"
+              required
+            />
+
+            <Input
+              label="Total Hours / Duration"
+              name="total_hours"
+              defaultValue="8h 30m"
+              placeholder="e.g. 8h 30m"
+              className="form-col-span"
+            />
+          </div>
+        </form>
+      </Modal>
 
       {/* Add Staff Modal */}
       <Modal
@@ -293,11 +667,14 @@ export function HMStaffOversight() {
         <form id="add-staff-form" onSubmit={handleAddStaff}>
           <div className="form-grid">
             <Input label="Full Name" name="full_name" placeholder="e.g. Dr. Arthur Sterling" required className="form-col-span" />
+            <Input label="Username" name="username" placeholder="e.g. arthur.sterling" required />
             <Input label="Employee ID" name="emp_id" placeholder="e.g. EMP-108" required />
             <Input label="Department / Subject" name="department" placeholder="e.g. Mathematics" required />
             <Input label="Designation" name="designation" placeholder="e.g. Senior Lecturer" defaultValue="Senior Lecturer" />
             <Input label="Classes Assigned" name="classes_assigned" placeholder="e.g. Class 10-A, 11-B" />
             <Input label="Email Address" name="email" type="email" placeholder="faculty@school.edu" required />
+            <Input label="Password" name="password1" type="password" placeholder="Minimum 6 characters" required />
+            <Input label="Confirm Password" name="password2" type="password" placeholder="Repeat password" required />
             <Input label="Phone Number" name="phone" placeholder="+91 98765 00000" />
           </div>
         </form>
@@ -429,14 +806,6 @@ export function HMStudentPerformance() {
 /* ════════════════════════════════════════════
    LEAVE APPROVALS (MANAGE STAFF & STUDENT LEAVE)
 ════════════════════════════════════════════ */
-const DEFAULT_LEAVES = [
-  { id: 1, applicant_name: 'Dr. Elena Rostova', role: 'Staff', department: 'Physics', leave_type: 'Medical Leave', from_date: '2026-09-18', to_date: '2026-09-20', duration_days: 3, reason: 'Doctor prescribed medical rest & outpatient procedure.', status: 'pending' },
-  { id: 2, applicant_name: 'Prof. Marcus Chen', role: 'Staff', department: 'Chemistry', leave_type: 'Duty Leave', from_date: '2026-09-22', to_date: '2026-09-23', duration_days: 2, reason: 'Representing institution at the State Science Symposium.', status: 'pending' },
-  { id: 3, applicant_name: 'Aarav Sharma', role: 'Student', department: 'Class 10-A', leave_type: 'Sick Leave', from_date: '2026-09-19', to_date: '2026-09-20', duration_days: 2, reason: 'Severe viral fever and flu symptoms.', status: 'pending' },
-  { id: 4, applicant_name: 'Sarah Jenkins', role: 'Staff', department: 'English', leave_type: 'Casual Leave', from_date: '2026-09-10', to_date: '2026-09-11', duration_days: 2, reason: 'Personal family obligation.', status: 'approved' },
-  { id: 5, applicant_name: 'Rohan Verma', role: 'Student', department: 'Class 10-A', leave_type: 'Family Function', from_date: '2026-09-08', to_date: '2026-09-09', duration_days: 2, reason: 'Sister wedding ceremony.', status: 'approved' },
-];
-
 export function HMLeaveApprovals() {
   const [tab, setTab] = useState('pending');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -449,7 +818,7 @@ export function HMLeaveApprovals() {
       const stored = localStorage.getItem('portal_hm_leaves');
       if (stored) return JSON.parse(stored);
     } catch (e) {}
-    return DEFAULT_LEAVES;
+    return [];
   });
 
   useEffect(() => {
@@ -745,19 +1114,13 @@ export function HMClassesCurriculum() {
 /* ════════════════════════════════════════════
    ANNOUNCEMENTS (SEND TO ONLY STAFF, ONLY STUDENTS, OR ALL)
 ════════════════════════════════════════════ */
-const DEFAULT_ANNOUNCEMENTS = [
-  { id: 1, title: 'Quarterly Faculty Evaluation & Curriculum Audit', message: 'All department chairs and teaching faculty are requested to submit syllabus completion percentages and internal assessment sheets by Friday.', audience: 'Staff', priority: 'High', created_at: '2026-09-15' },
-  { id: 2, title: 'Upcoming Mid-Term Examination Schedule Released', message: 'The official schedule for mid-term assessments is now published. Students must download their admit slips and review the examination hall rules.', audience: 'Students', priority: 'Normal', created_at: '2026-09-14' },
-  { id: 3, title: 'Annual Founders Day Celebrations & Campus Schedule', message: 'The school will celebrate Founders Day on the upcoming Monday. Morning assembly and exhibitions will be open to all faculty, students, and parents.', audience: 'All', priority: 'Normal', created_at: '2026-09-12' },
-];
-
 export function HMAnnouncements() {
   const [announcements, setAnnouncements] = useState(() => {
     try {
       const stored = localStorage.getItem('portal_hm_announcements');
       if (stored) return JSON.parse(stored);
     } catch (e) {}
-    return DEFAULT_ANNOUNCEMENTS;
+    return [];
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -1070,17 +1433,8 @@ export function HMAcademicReports() {
       .catch(() => setLoading(false));
   }, []);
 
-  const demoGrades = [
-    { name: 'A+', value: 45 }, { name: 'A', value: 80 }, { name: 'B', value: 120 },
-    { name: 'C', value: 90 }, { name: 'D', value: 50 }, { name: 'F', value: 27 },
-  ];
-  const demoSubject = [
-    { subject: 'Maths', avg: 72 }, { subject: 'Science', avg: 68 }, { subject: 'English', avg: 81 },
-    { subject: 'History', avg: 75 }, { subject: 'Commerce', avg: 78 },
-  ];
-
-  const gradeData = report?.grade_distribution || demoGrades;
-  const subjectData = report?.subject_performance || demoSubject;
+  const gradeData = report?.grade_distribution || [];
+  const subjectData = report?.subject_performance || [];
   const overview = report?.overview || {};
 
   return (
@@ -1088,36 +1442,44 @@ export function HMAcademicReports() {
       <PageHeader title="Academic Reports" subtitle="Comprehensive analysis of institutional academic performance." />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 16 }}>
-        <StatCard title="Overall Pass Rate" value={`${overview.pass_rate || 88}%`} icon="✅" color="#10b981" />
-        <StatCard title="Average Score" value={`${overview.avg_score || 74}%`} icon="📊" color="#0d9488" />
-        <StatCard title="Distinctions" value={overview.distinctions || 45} icon="🏆" color="#f59e0b" />
-        <StatCard title="Failures" value={overview.failures || 27} icon="⚠️" color="#ef4444" />
+        <StatCard title="Overall Pass Rate" value={`${overview.pass_rate || 0}%`} icon="check" color="success" />
+        <StatCard title="Average Score" value={`${overview.avg_score || 0}%`} icon="reports" color="info" />
+        <StatCard title="Distinctions" value={overview.distinctions || 0} icon="award" color="warning" />
+        <StatCard title="Failures" value={overview.failures || 0} icon="alert" color="danger" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
         <Card>
           <CardHeader title="Grade Distribution" />
-          <ResponsiveContainer width="100%" height={240}>
-            <PieChart>
-              <Pie data={gradeData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                {gradeData.map((_, i) => <Cell key={i} fill={REPORT_COLORS[i % REPORT_COLORS.length]} />)}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          {gradeData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={240}>
+              <PieChart>
+                <Pie data={gradeData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  {gradeData.map((_, i) => <Cell key={i} fill={REPORT_COLORS[i % REPORT_COLORS.length]} />)}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState icon="reports" title="No grade data" subtitle="Grade distribution analytics will populate after examination results are logged." />
+          )}
         </Card>
 
         <Card>
           <CardHeader title="Subject-wise Average Score" />
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={subjectData} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="subject" tick={{ fontSize: 12 }} width={80} />
-              <Tooltip />
-              <Bar dataKey="avg" fill="#0d9488" radius={[0, 4, 4, 0]} name="Avg Score" />
-            </BarChart>
-          </ResponsiveContainer>
+          {subjectData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={subjectData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
+                <YAxis type="category" dataKey="subject" tick={{ fontSize: 12 }} width={80} />
+                <Tooltip />
+                <Bar dataKey="avg" fill="#0d9488" radius={[0, 4, 4, 0]} name="Avg Score" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState icon="analytics" title="No subject performance logs" subtitle="Subject averages will appear once exam scores are computed." />
+          )}
         </Card>
       </div>
     </Section>

@@ -52,6 +52,7 @@ student_patterns = [
 admin_patterns = [
     # Auth
     path('auth/login/',          a.AdminLoginView.as_view(),            name='api_admin_login'),
+    path('auth/signup/',         a.AdminSignupView.as_view(),           name='api_admin_signup'),
     path('auth/logout/',         a.AdminLogoutView.as_view(),           name='api_admin_logout'),
     path('auth/forgot-password/',a.AdminForgotPasswordView.as_view(),   name='api_admin_forgot'),
     path('auth/reset-password/', a.AdminResetPasswordView.as_view(),    name='api_admin_reset'),

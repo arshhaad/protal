@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthPage from '../../components/AuthPage';
 import { Input, PasswordInput, Button } from '../../components/ui/index';
+import { api, setToken } from '../../services/api';
 
 export default function StaffLogin() {
   const [username, setUsername] = useState('');
@@ -10,12 +11,21 @@ export default function StaffLogin() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (!username || !password) { setError('Please fill in all fields.'); return; }
     setLoading(true);
-    setTimeout(() => { setLoading(false); navigate('/staff/dashboard'); }, 900);
+    try {
+      const data = await api.staffLogin({ username, password });
+      setToken(data.token);
+      localStorage.setItem('staffUser', JSON.stringify(data));
+      navigate('/staff/dashboard');
+    } catch (err) {
+      setError(err.message || 'Invalid staff credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

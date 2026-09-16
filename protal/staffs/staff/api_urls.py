@@ -4,6 +4,7 @@ from . import api_views as v
 staff_patterns = [
     # Auth
     path('auth/login/',           v.StaffLoginView.as_view(),               name='api_staff_login'),
+    path('auth/signup/',          v.StaffSignupView.as_view(),              name='api_staff_signup'),
     path('auth/logout/',          v.StaffLogoutView.as_view(),              name='api_staff_logout'),
     path('auth/forgot-password/', v.StaffForgotPasswordView.as_view(),      name='api_staff_forgot'),
     path('auth/reset-password/',  v.StaffResetPasswordView.as_view(),       name='api_staff_reset'),

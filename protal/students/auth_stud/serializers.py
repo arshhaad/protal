@@ -95,6 +95,80 @@ class AdminLoginSerializer(serializers.Serializer):
         return data
 
 
+class AdminSignupSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    password1 = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError('A user with that username already exists.')
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('A user with that email already exists.')
+        return value
+
+    def validate(self, data):
+        password = data['password1']
+        if password != data['password2']:
+            raise serializers.ValidationError({'password2': "Passwords don't match."})
+        if len(password) < 6:
+            raise serializers.ValidationError({'password1': 'Password must be at least 6 characters.'})
+        return data
+
+    def create(self, validated_data):
+        validated_data.pop('password2')
+        password = validated_data.pop('password1')
+        return User.objects.create_user(
+            password=password,
+            is_staff=True,
+            is_superuser=True,
+            **validated_data,
+        )
+
+
+class StaffSignupSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    password1 = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
+    full_name = serializers.CharField(required=False, allow_blank=True)
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError('A user with that username already exists.')
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('A user with that email already exists.')
+        return value
+
+    def validate(self, data):
+        password = data['password1']
+        if password != data['password2']:
+            raise serializers.ValidationError({'password2': "Passwords don't match."})
+        if len(password) < 6:
+            raise serializers.ValidationError({'password1': 'Password must be at least 6 characters.'})
+        return data
+
+    def create(self, validated_data):
+        validated_data.pop('password2')
+        password = validated_data.pop('password1')
+        full_name = validated_data.pop('full_name', '').strip()
+        first_name, _, last_name = full_name.partition(' ')
+        return User.objects.create_user(
+            password=password,
+            is_staff=True,
+            first_name=first_name,
+            last_name=last_name,
+            **validated_data,
+        )
+
+
 class ForgotPasswordSerializer(serializers.Serializer):
     """Used by all three portals — accepts enroll_id or email."""
     identifier = serializers.CharField(help_text='Enrollment ID or email address')

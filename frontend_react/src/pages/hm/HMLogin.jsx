@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthPage from '../../components/AuthPage';
 import { Input, PasswordInput, Button } from '../../components/ui/index';
+import { api, setToken } from '../../services/api';
 
 export default function HMLogin() {
   const [identifier, setIdentifier] = useState('');
@@ -10,7 +11,7 @@ export default function HMLogin() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (!identifier || !password) {
@@ -18,10 +19,16 @@ export default function HMLogin() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const data = await api.hmLogin({ username: identifier, password });
+      setToken(data.token);
+      localStorage.setItem('hmUser', JSON.stringify(data.user || data));
       navigate('/hm/dashboard');
-    }, 850);
+    } catch (err) {
+      setError(err.message || 'Invalid HM credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

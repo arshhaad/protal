@@ -2,17 +2,17 @@ import PortalLayout from './PortalLayout';
 
 const NAV = [
   { section: 'Academic Overview' },
-  { to: '/hm/dashboard',           icon: '🏛️', label: 'HM Overview', end: true },
+  { to: '/hm/dashboard',           icon: 'dashboard', label: 'HM Overview', end: true },
   { section: 'Faculty & Students' },
-  { to: '/hm/staff-oversight',     icon: '👨‍🏫', label: 'Staff Oversight' },
-  { to: '/hm/student-performance', icon: '🎓', label: 'Student Performance' },
-  { to: '/hm/classes-curriculum',   icon: '🏫', label: 'Classes & Curriculum' },
+  { to: '/hm/staff-oversight',     icon: 'staff', label: 'Staff Oversight' },
+  { to: '/hm/student-performance', icon: 'students', label: 'Student Performance' },
+  { to: '/hm/classes-curriculum',   icon: 'classes', label: 'Classes & Curriculum' },
   { section: 'Administrative Actions' },
-  { to: '/hm/leave-approvals',     icon: '✅', label: 'Leave Approvals', badge: '4', badgeVariant: 'danger' },
-  { to: '/hm/announcements',       icon: '📢', label: 'Announcements' },
+  { to: '/hm/leave-approvals',     icon: 'leave', label: 'Leave Approvals' },
+  { to: '/hm/announcements',       icon: 'announcements', label: 'Announcements' },
   { section: 'Analytics & Support' },
-  { to: '/hm/academic-reports',    icon: '📊', label: 'Academic Reports' },
-  { to: '/hm/tickets',             icon: '🎟️', label: 'Grievances & Tickets' },
+  { to: '/hm/academic-reports',    icon: 'reports', label: 'Academic Reports' },
+  { to: '/hm/tickets',             icon: 'tickets', label: 'Grievances & Tickets' },
 ];
 
 export default function HMLayout() {

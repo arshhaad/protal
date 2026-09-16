@@ -2,15 +2,13 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthPage from '../../components/AuthPage';
 import { Input, PasswordInput, Button, useToast } from '../../components/ui/index';
+import { api } from '../../services/api';
 
 export default function AdminSignUp() {
-  const [adminName, setAdminName] = useState('');
-  const [schoolName, setSchoolName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [instCode, setInstCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,87 +19,48 @@ export default function AdminSignUp() {
     e.preventDefault();
     setError('');
 
-    if (!adminName || !schoolName || !email || !instCode || !password || !confirmPassword) {
-      setError('Please fill in all required registration fields.');
+    if (!username || !email || !password || !confirmPassword) {
+      setError('Please fill in all fields.');
       return;
     }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long.');
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
       return;
     }
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
-    if (!agreed) {
-      setError('You must agree to the Institution SaaS Terms of Service.');
-      return;
-    }
-
     setLoading(true);
-    setTimeout(() => {
+    api.adminSignup({ username, email, password1: password, password2: confirmPassword })
+      .then(() => {
+        toast('Signup successful. Please login to continue.', 'success');
+        navigate('/admin/login');
+      })
+      .catch(err => setError(err.message || 'Unable to create account.'))
+      .finally(() => {
       setLoading(false);
-      toast('Institution Admin account registered successfully! Logging you in…', 'success');
-      navigate('/admin/dashboard');
-    }, 950);
+      });
   };
 
   return (
     <AuthPage accent="#ef4444" logoIcon="🛡️" logoName="AdminPanel">
-      <h1 className="auth-heading">Institution Registration</h1>
-      <p className="auth-subheading">Create your administrator account to set up your school on EduPortal SaaS.</p>
+      <h1 className="auth-heading">Create your account</h1>
+      <p className="auth-subheading">Register with a username, email, and password.</p>
 
       {error && <div className="auth-alert auth-alert--error" role="alert">⚠ {error}</div>}
 
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <Input
-            id="adminName"
-            label="Administrator Name"
-            placeholder="Dr. Samantha Vance"
-            icon="👤"
-            value={adminName}
-            onChange={e => setAdminName(e.target.value)}
-            required
-          />
-          <Input
-            id="schoolName"
-            label="School / Institution Name"
-            placeholder="Oakridge International"
-            icon="🏫"
-            value={schoolName}
-            onChange={e => setSchoolName(e.target.value)}
-            required
-          />
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 12 }}>
-          <Input
-            id="email"
-            type="email"
-            label="Official Work Email"
-            placeholder="admin@oakridge.edu"
-            icon="📧"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-          />
-          <Input
-            id="instCode"
-            label="Institution ID / Code"
-            placeholder="e.g. OAK-2024"
-            icon="🏷️"
-            value={instCode}
-            onChange={e => setInstCode(e.target.value)}
-            required
-          />
-        </div>
+        <Input id="username" label="Username" placeholder="admin" icon="👤"
+          value={username} onChange={e => setUsername(e.target.value)} required />
+        <Input id="email" type="email" label="Email" placeholder="admin@school.edu" icon="📧"
+          value={email} onChange={e => setEmail(e.target.value)} required />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <PasswordInput
             id="password"
             label="Password"
-            placeholder="Min. 8 chars"
+            placeholder="Min. 6 chars"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
@@ -116,18 +75,6 @@ export default function AdminSignUp() {
           />
         </div>
 
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: 'var(--text-secondary)', cursor: 'pointer', marginTop: 4 }}>
-          <input
-            type="checkbox"
-            checked={agreed}
-            onChange={e => setAgreed(e.target.checked)}
-            style={{ marginTop: 2 }}
-          />
-          <span>
-            I agree to the <strong style={{ color: 'var(--text-primary)' }}>Institution Master Services Agreement</strong> and Privacy Policy.
-          </span>
-        </label>
-
         <Button
           type="submit"
           loading={loading}
@@ -135,7 +82,7 @@ export default function AdminSignUp() {
           size="lg"
           style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', height: 44, fontWeight: 600, marginTop: 8 }}
         >
-          {loading ? 'Creating Institution Account…' : 'Register Institution'}
+          {loading ? 'Creating account…' : 'Sign Up'}
         </Button>
       </form>
 

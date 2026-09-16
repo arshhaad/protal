@@ -6,6 +6,8 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from .models import (
     StudentProfile, Course, StudyMaterial, FeeTransaction,
@@ -18,7 +20,11 @@ from .serializers import (
 from .permissions import IsAdminUser, IsStaffMember
 from staffs.staff.models import StaffProfile, Event, Assessment
 from staffs.staff.serializers import StaffProfileSerializer, EventSerializer, AssessmentSerializer
-from students.auth_stud.serializers import AdminLoginSerializer, ResetPasswordSerializer
+from students.auth_stud.serializers import (
+    AdminLoginSerializer,
+    AdminSignupSerializer,
+    ResetPasswordSerializer,
+)
 
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
@@ -44,6 +50,19 @@ class AdminLoginView(APIView):
             'email':     user.email,
             'is_superuser': user.is_superuser,
         })
+
+
+class AdminSignupView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = AdminSignupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {'detail': 'Signup successful. Please login to continue.'},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class AdminLogoutView(APIView):
@@ -173,8 +192,14 @@ class AdminCreateStudentView(APIView):
         password   = request.data.get('password', '').strip()
         section    = request.data.get('section', '').strip()
 
-        if not all([enroll_id, email, password]):
-            return Response({'detail': 'enroll_id, email and password are required.'}, status=400)
+        if not all([enroll_id, first_name, class_name, email, password]):
+            return Response({'detail': 'Enrollment ID, first name, class, email and password are required.'}, status=400)
+        if len(password) < 8:
+            return Response({'detail': 'Password must contain at least 8 characters.'}, status=400)
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            return Response({'detail': 'Enter a valid email address.'}, status=400)
 
         if StudentProfile.objects.filter(enroll_id=enroll_id).exists():
             return Response({'detail': 'Enrollment ID already in use.'}, status=400)
@@ -234,8 +259,14 @@ class AdminCreateStaffView(APIView):
         department  = request.data.get('department', '').strip()
         password    = request.data.get('password', '').strip()
 
-        if not all([email, password]):
-            return Response({'detail': 'email and password are required.'}, status=400)
+        if not all([first_name, email, department, password]):
+            return Response({'detail': 'First name, department, email and password are required.'}, status=400)
+        if len(password) < 8:
+            return Response({'detail': 'Password must contain at least 8 characters.'}, status=400)
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            return Response({'detail': 'Enter a valid email address.'}, status=400)
 
         if User.objects.filter(email=email).exists():
             return Response({'detail': 'Email address already registered.'}, status=400)
@@ -302,8 +333,10 @@ class AdminSendMessageView(APIView):
         body      = request.data.get('body', '').strip()
         important = request.data.get('important', False)
 
-        if not title or not body:
-            return Response({'detail': 'title and body are required.'}, status=400)
+        if len(title) < 3 or len(body) < 3:
+            return Response({'detail': 'Title and message must each contain at least 3 characters.'}, status=400)
+        if not isinstance(important, bool):
+            return Response({'detail': 'important must be true or false.'}, status=400)
 
         if target == 'all_students':
             recipients = User.objects.filter(is_active=True, student_profile__isnull=False)

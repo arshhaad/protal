@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
-import { Avatar, Modal, Button, useToast } from './ui/index';
+import { Avatar, Modal, Button, useToast, Icon } from './ui/index';
 import './PortalLayout.css';
 
 export default function PortalLayout({
@@ -10,7 +10,7 @@ export default function PortalLayout({
   accentColor,       // CSS color for active nav items
   logoutPath,
   title,             // App/portal name e.g. "EduPortal"
-  logoIcon = '🎓',
+  logoIcon = 'academic',
 }) {
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -102,7 +102,7 @@ export default function PortalLayout({
         {/* Logo */}
         <div className="sidebar__logo">
           <div className="sidebar__logo-icon" style={{ background: accent }} aria-hidden="true">
-            {logoIcon}
+            {typeof logoIcon === 'string' ? <Icon name={logoIcon} size={20} color="#fff" /> : logoIcon}
           </div>
           {!collapsed && (
             <div className="sidebar__logo-text">
@@ -115,7 +115,7 @@ export default function PortalLayout({
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand' : 'Collapse'}
           >
-            {collapsed ? '→' : '←'}
+            {collapsed ? <Icon name="chevronRight" size={14} /> : <Icon name="chevronLeft" size={14} />}
           </button>
         </div>
 
@@ -139,7 +139,9 @@ export default function PortalLayout({
                 onClick={() => setMobileOpen(false)}
                 title={collapsed ? item.label : undefined}
               >
-                <span className="sidebar__link-icon" aria-hidden="true">{item.icon}</span>
+                <span className="sidebar__link-icon" aria-hidden="true">
+                  {typeof item.icon === 'string' ? <Icon name={item.icon} size={18} /> : item.icon}
+                </span>
                 {!collapsed && (
                   <span className="sidebar__link-label">{item.label}</span>
                 )}
@@ -172,7 +174,7 @@ export default function PortalLayout({
               title="Logout"
               aria-label="Logout"
             >
-              ⎋
+              <Icon name="logout" size={16} />
             </button>
           )}
         </div>
@@ -190,7 +192,7 @@ export default function PortalLayout({
               aria-label="Open menu"
               aria-expanded={mobileOpen}
             >
-              ☰
+              <Icon name="menu" size={18} />
             </button>
             <div className="header__breadcrumbs" aria-label="Breadcrumb">
               <span className="header__breadcrumb-root">{title}</span>
@@ -207,7 +209,9 @@ export default function PortalLayout({
 
           {/* Center: desktop search bar */}
           <div className="header__search">
-            <span className="header__search-icon" aria-hidden="true">🔍</span>
+            <span className="header__search-icon" aria-hidden="true">
+              <Icon name="search" size={16} />
+            </span>
             <input
               type="search"
               className="header__search-input"
@@ -227,7 +231,7 @@ export default function PortalLayout({
               className="header__icon-btn"
               aria-label="Notifications"
             >
-              🔔
+              <Icon name="bell" size={18} />
               <span className="header__notif-dot" aria-hidden="true" />
             </NavLink>
 
@@ -245,7 +249,9 @@ export default function PortalLayout({
                   <span className="header__profile-name">{user.name}</span>
                   <span className="header__profile-role">{user.role}</span>
                 </div>
-                <span className="header__profile-chevron" aria-hidden="true">▾</span>
+                <span className="header__profile-chevron" aria-hidden="true">
+                  <Icon name="chevronDown" size={14} />
+                </span>
               </button>
 
               {profileOpen && (
@@ -259,10 +265,10 @@ export default function PortalLayout({
                   </div>
                   <div className="profile-dropdown__divider" />
                   <button role="menuitem" className="profile-dropdown__item" onClick={handleProfileClick}>
-                    <span>👤</span> Profile
+                    <Icon name="profile" size={16} /> Profile
                   </button>
                   <button role="menuitem" className="profile-dropdown__item" onClick={() => { setProfileOpen(false); setShowSettingsModal(true); }}>
-                    <span>⚙️</span> Settings
+                    <Icon name="settings" size={16} /> Settings
                   </button>
                   <div className="profile-dropdown__divider" />
                   <div className="profile-dropdown__theme">
@@ -275,7 +281,7 @@ export default function PortalLayout({
                     className="profile-dropdown__item profile-dropdown__item--danger"
                     onClick={handleLogout}
                   >
-                    <span>⎋</span> Sign out
+                    <Icon name="logout" size={16} /> Sign out
                   </button>
                 </div>
               )}

@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from .models import StaffProfile, ClassGroup, StaffAttendance, Assessment, Event
 from .serializers import (
@@ -23,7 +25,11 @@ from students.stud_details.serializers import (
     AttendanceRecordSerializer, StudentProfileSerializer, LeaveRequestSerializer,
 )
 from students.stud_details.permissions import IsStaffMember, IsAdminUser
-from students.auth_stud.serializers import StaffLoginSerializer, ResetPasswordSerializer
+from students.auth_stud.serializers import (
+    StaffLoginSerializer,
+    StaffSignupSerializer,
+    ResetPasswordSerializer,
+)
 
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
@@ -64,6 +70,25 @@ class StaffLogoutView(APIView):
     def post(self, request):
         request.user.auth_token.delete()
         return Response({'detail': 'Logged out.'})
+
+
+class StaffSignupView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = StaffSignupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        StaffProfile.objects.create(
+            user=user,
+            department=request.data.get('department', '').strip(),
+            designation=request.data.get('designation', 'Lecturer').strip(),
+            phone=request.data.get('phone', '').strip(),
+        )
+        return Response(
+            {'detail': 'Signup successful. Please login to continue.'},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class StaffForgotPasswordView(APIView):
@@ -215,14 +240,27 @@ class StaffStudentListView(generics.ListCreateAPIView):
         guardian   = request.data.get('guardian', '').strip()
         guardian_phone = request.data.get('guardian_phone', '').strip()
 
-        if not enroll_id:
-            return Response({'detail': 'Enrollment ID is required.'}, status=400)
+        if not all([enroll_id, first_name, class_name]):
+            return Response({'detail': 'Enrollment ID, first name and class are required.'}, status=400)
+        if len(enroll_id) < 3 or len(first_name) < 2:
+            return Response({'detail': 'Enrollment ID must be at least 3 characters and first name at least 2 characters.'}, status=400)
 
         if not email:
             email = f"{enroll_id.lower()}@school.edu"
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            return Response({'detail': 'Enter a valid student email address.'}, status=400)
+
+        for label, number in [('Student phone', phone), ('Guardian phone', guardian_phone)]:
+            digits = ''.join(char for char in number if char.isdigit())
+            if number and not 10 <= len(digits) <= 15:
+                return Response({'detail': f'{label} must contain 10 to 15 digits.'}, status=400)
 
         if StudentProfile.objects.filter(enroll_id=enroll_id).exists():
             return Response({'detail': 'Enrollment ID already in use.'}, status=400)
+        if User.objects.filter(email=email).exists() or User.objects.filter(username=enroll_id).exists():
+            return Response({'detail': 'A user with this enrollment ID or email already exists.'}, status=400)
 
         user, created = User.objects.get_or_create(
             username=enroll_id,
@@ -330,8 +368,10 @@ class StaffGradeSubmissionView(APIView):
         grade    = request.data.get('grade', '').strip()
         feedback = request.data.get('feedback', '').strip()
 
-        if not grade:
-            return Response({'detail': 'Grade is required.'}, status=400)
+        if not grade or len(grade) > 10:
+            return Response({'detail': 'Grade is required and must be 10 characters or fewer.'}, status=400)
+        if feedback and len(feedback) < 3:
+            return Response({'detail': 'Feedback must contain at least 3 characters when provided.'}, status=400)
 
         submission.grade       = grade
         submission.feedback    = feedback
@@ -421,12 +461,17 @@ class StaffMarkStudentAttendanceView(APIView):
 
         if not date_str or not class_name or not records:
             return Response({'detail': 'date, class_name and records are required.'}, status=400)
+        if not isinstance(records, list):
+            return Response({'detail': 'records must be a list.'}, status=400)
 
         saved = 0
         errors = []
         for rec in records:
             enroll_id = rec.get('enroll_id')
             att_status= rec.get('status', 'P')
+            if not enroll_id or att_status not in ('P', 'A', 'L', 'T'):
+                errors.append('Each record requires a valid enrollment ID and attendance status.')
+                continue
             try:
                 profile = StudentProfile.objects.get(enroll_id=enroll_id)
                 AttendanceRecord.objects.update_or_create(

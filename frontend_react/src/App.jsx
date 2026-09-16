@@ -79,7 +79,7 @@ export default function App() {
 
             {/* ── STUDENT PORTAL ── */}
             <Route path="/student" element={<StudentLayout />}>
-              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route index element={<Navigate to="/student/login" replace />} />
               <Route path="dashboard"     element={<StudentDashboard />} />
               <Route path="profile"       element={<StudentProfile />} />
               <Route path="exam-details"  element={<StudentExamDetails />} />
@@ -103,7 +103,7 @@ export default function App() {
 
             {/* ── STAFF PORTAL ── */}
             <Route path="/staff" element={<StaffLayout />}>
-              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route index element={<Navigate to="/staff/login" replace />} />
               <Route path="dashboard"           element={<StaffDashboard />} />
               <Route path="courses"             element={<StaffViewCourses />} />
               <Route path="study-materials"     element={<StaffStudyMaterials />} />
@@ -125,7 +125,7 @@ export default function App() {
 
             {/* ── HM (HEAD MASTER) PORTAL ── */}
             <Route path="/hm" element={<HMLayout />}>
-              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route index element={<Navigate to="/hm/login" replace />} />
               <Route path="dashboard"           element={<HMDashboard />} />
               <Route path="staff-oversight"     element={<HMStaffOversight />} />
               <Route path="student-performance" element={<HMStudentPerformance />} />
@@ -144,7 +144,7 @@ export default function App() {
 
             {/* ── ADMIN PORTAL ── */}
             <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route index element={<Navigate to="/admin/login" replace />} />
               <Route path="dashboard"       element={<AdminDashboard />} />
               <Route path="manage-courses"  element={<AdminManageCourses />} />
               <Route path="manage-users"    element={<AdminManageUsers />} />

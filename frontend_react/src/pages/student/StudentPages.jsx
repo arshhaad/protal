@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   Card, CardHeader, PageHeader, Table, Button, Input, Select,
   Textarea, Badge, ProgressBar, Tabs, Avatar, EmptyState, Modal,
-  StatCard,
+  StatCard, showToast,
 } from '../../components/ui/index';
 import { api } from '../../services/api';
 
@@ -77,7 +77,9 @@ export function StudentProfile() {
     };
     try {
       await api.updateStudentProfile(updated);
-    } catch (err) {}
+    } catch (err) {
+      return;
+    }
     setProfile(p => ({
       ...p,
       phone: updated.phone || p.phone,
@@ -88,6 +90,7 @@ export function StudentProfile() {
       gender: fd.get('gender') || p.gender,
     }));
     setEditing(false);
+    showToast('Profile updated successfully.');
   };
 
   const Field = ({ label, value, name, type = 'text', children }) => (
@@ -493,9 +496,10 @@ export function StudentTasks() {
       await api.submitStudentTask(newTask);
       fetchTasks();
       setShowModal(false);
+      showToast('Task submitted successfully.');
     } catch (err) {
-      setTasks(p => [{ id: Date.now(), ...newTask }, ...p]);
-      setShowModal(false);
+      // The API client displays the backend validation message. Keep the modal
+      // open so the student can correct the entered data.
     }
   };
 
@@ -627,11 +631,9 @@ export function StudentLeaveRequest() {
       setSaved(true);
       fetchLeave();
       e.target.reset();
+      showToast('Leave request submitted successfully.');
       setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    }
+    } catch (err) {}
   };
 
   const cols = [
@@ -739,10 +741,9 @@ export function StudentTickets() {
       setShowModal(false);
       setMsg('Ticket submitted successfully!');
       fetchTickets();
+      showToast('Ticket submitted successfully.');
       setTimeout(() => setMsg(''), 3000);
-    } catch (err) {
-      setShowModal(false);
-    }
+    } catch (err) {}
   };
 
   const cols = [
@@ -789,10 +790,11 @@ export function StudentContactUs() {
         subject: fd.get('subject'),
         message: fd.get('message'),
       });
+      setSent(true);
+      e.target.reset();
+      showToast('Message sent successfully.');
+      setTimeout(() => setSent(false), 3000);
     } catch (err) {}
-    setSent(true);
-    e.target.reset();
-    setTimeout(() => setSent(false), 3000);
   };
 
   return (

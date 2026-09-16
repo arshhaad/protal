@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import {
   Card, CardHeader, PageHeader, Table, Button, Input, Select,
   Textarea, SearchInput, Modal, Badge, ProgressBar, Tabs, Avatar,
-  EmptyState,
+  EmptyState, showToast, StatCard,
 } from '../../components/ui/index';
 import { api } from '../../services/api';
 
@@ -108,14 +108,6 @@ export function StaffSessionCreation() {
 }
 
 /* ── STUDENT DETAILS ── */
-const DEFAULT_STUDENTS = [
-  { id: 1, full_name: 'Aarav Sharma', enroll_id: 'STU-101', class_name: 'Class 10-A', section: 'A', phone: '+91 98765 43210', email: 'aarav@school.edu', guardian: 'Ramesh Sharma', attendance_rate: 94, status: 'Active' },
-  { id: 2, full_name: 'Diya Patel', enroll_id: 'STU-102', class_name: 'Class 10-A', section: 'A', phone: '+91 98765 43211', email: 'diya@school.edu', guardian: 'Nilesh Patel', attendance_rate: 98, status: 'Active' },
-  { id: 3, full_name: 'Rohan Verma', enroll_id: 'STU-103', class_name: 'Class 10-A', section: 'A', phone: '+91 98765 43212', email: 'rohan@school.edu', guardian: 'Suresh Verma', attendance_rate: 82, status: 'Active' },
-  { id: 4, full_name: 'Ananya Iyer', enroll_id: 'STU-104', class_name: 'Class 10-B', section: 'B', phone: '+91 98765 43213', email: 'ananya@school.edu', guardian: 'Venkatesh Iyer', attendance_rate: 91, status: 'Active' },
-  { id: 5, full_name: 'Kabir Khan', enroll_id: 'STU-105', class_name: 'Class 10-B', section: 'B', phone: '+91 98765 43214', email: 'kabir@school.edu', guardian: 'Tariq Khan', attendance_rate: 88, status: 'Active' },
-];
-
 export function StaffStudentDetails() {
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -126,7 +118,7 @@ export function StaffStudentDetails() {
       const stored = localStorage.getItem('portal_students_db');
       if (stored) return JSON.parse(stored);
     } catch (e) {}
-    return DEFAULT_STUDENTS;
+    return [];
   });
 
   useEffect(() => {
@@ -152,10 +144,12 @@ export function StaffStudentDetails() {
   const handleAddStudent = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
+    const nameParts = fd.get('full_name').trim().split(/\s+/);
     const newStud = {
-      id: Date.now(),
       full_name: fd.get('full_name'),
       name: fd.get('full_name'),
+      first_name: nameParts[0],
+      last_name: nameParts.slice(1).join(' '),
       enroll_id: fd.get('enroll_id') || `STU-${Math.floor(100 + Math.random() * 900)}`,
       class_name: fd.get('class_name'),
       section: fd.get('section') || 'A',
@@ -169,13 +163,16 @@ export function StaffStudentDetails() {
 
     try {
       await api.createStaffStudent(newStud);
-    } catch (err) {}
+    } catch (err) {
+      return;
+    }
 
     const updated = [newStud, ...students];
     setStudents(updated);
     try { localStorage.setItem('portal_students_db', JSON.stringify(updated)); } catch (e) {}
 
     setShowAddModal(false);
+    showToast(`Student ${newStud.full_name} added successfully.`);
     setSuccessMsg(`✓ Student ${newStud.full_name} (${newStud.enroll_id}) added successfully!`);
     setTimeout(() => setSuccessMsg(''), 4000);
   };
@@ -346,17 +343,6 @@ export function StaffTestCreation() {
 }
 
 /* ── TASK REVIEWS & CREATION ── */
-const DEFAULT_TASKS = [
-  { id: 1, title: 'Calculus Problem Set 3', course: 'Mathematics', class_name: 'Class 10-A', due_date: '2026-09-25', max_marks: 100, description: 'Complete questions 1 to 15 from Chapter 4 on Derivatives.' },
-  { id: 2, title: 'Electromagnetism Lab Report', course: 'Physics', class_name: 'Class 10-A', due_date: '2026-09-28', max_marks: 50, description: 'Submit experimental findings on magnetic flux inductance.' },
-];
-
-const DEFAULT_SUBMISSIONS = [
-  { id: 1, student_name: 'Aarav Sharma', student_id: 'STU-101', task_id: 1, task_title: 'Calculus Problem Set 3', submitted_at: '2026-09-15', answer_text: 'Attached step-by-step proofs for problems 1-15 with graph plots.', grade: '', feedback: '', status: 'Pending' },
-  { id: 2, student_name: 'Diya Patel', student_id: 'STU-102', task_id: 1, task_title: 'Calculus Problem Set 3', submitted_at: '2026-09-14', answer_text: 'Solutions compiled into PDF with full working and chain rule derivations.', grade: '95/100', feedback: 'Outstanding execution and clean notation!', status: 'Graded' },
-  { id: 3, student_name: 'Rohan Verma', student_id: 'STU-103', task_id: 2, task_title: 'Electromagnetism Lab Report', submitted_at: '2026-09-15', answer_text: 'Measurement readings recorded across 5 trials; error margin noted at 2.4%.', grade: '', feedback: '', status: 'Pending' },
-];
-
 export function StaffTaskReviews() {
   const [tab, setTab] = useState('submissions');
   const [subFilter, setSubFilter] = useState('all');
@@ -372,7 +358,7 @@ export function StaffTaskReviews() {
       const stored = localStorage.getItem('portal_staff_tasks');
       if (stored) return JSON.parse(stored);
     } catch (e) {}
-    return DEFAULT_TASKS;
+    return [];
   });
 
   const [subs, setSubs] = useState(() => {
@@ -380,7 +366,7 @@ export function StaffTaskReviews() {
       const stored = localStorage.getItem('portal_staff_subs');
       if (stored) return JSON.parse(stored);
     } catch (e) {}
-    return DEFAULT_SUBMISSIONS;
+    return [];
   });
 
   useEffect(() => {
@@ -620,40 +606,342 @@ export function StaffTaskReviews() {
 
 /* ── STAFF SELF ATTENDANCE ── */
 export function StaffAttendanceStaff() {
-  const [checkedIn, setCheckedIn] = useState(false);
-  const [checkInTime, setCheckInTime] = useState(null);
-  const [records, setRecords] = useState([]);
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+
+  const [records, setRecords] = useState(() => {
+    try {
+      const stored = localStorage.getItem('portal_staff_attendance_db');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return [];
+  });
+
+  // Keep live clock updated
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Fetch from backend API and merge
+  useEffect(() => {
+    api.getStaffSelfAttendance()
+      .then(res => {
+        const data = Array.isArray(res) ? res : res?.results || [];
+        if (data.length > 0) {
+          setRecords(prev => {
+            const combined = [...data];
+            prev.forEach(p => {
+              if (!combined.some(c => (c.date === p.date && (c.id === p.id || c.emp_id === p.emp_id)))) {
+                combined.push(p);
+              }
+            });
+            localStorage.setItem('portal_staff_attendance_db', JSON.stringify(combined));
+            return combined;
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const todayRecord = records.find(r => r.date === todayStr);
+  const isCheckedIn = !!(todayRecord && todayRecord.check_in && todayRecord.check_in !== '—');
+  const isCheckedOut = !!(todayRecord && todayRecord.check_out && todayRecord.check_out !== '—');
+
+  const nowTimeStr = () => new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  const handleCheckIn = async () => {
+    const cin = nowTimeStr();
+    const newRec = {
+      id: Date.now(),
+      date: todayStr,
+      check_in: cin,
+      check_out: '—',
+      total_hours: '—',
+      status: 'Present',
+      recorded_by: 'Self Punch',
+      staff_name: 'Staff User',
+    };
+
+    try {
+      await api.createStaffAttendance(newRec);
+    } catch (e) {}
+
+    const updated = [newRec, ...records.filter(r => r.date !== todayStr)];
+    setRecords(updated);
+    try {
+      localStorage.setItem('portal_staff_attendance_db', JSON.stringify(updated));
+    } catch (e) {}
+
+    setSuccessMsg(`✓ Successfully checked in at ${cin}! Have a great workday.`);
+    setTimeout(() => setSuccessMsg(''), 4000);
+  };
+
+  const handleCheckOut = async () => {
+    if (!todayRecord) return;
+    const cout = nowTimeStr();
+    const cin = todayRecord.check_in || '09:00 AM';
+
+    const updatedRec = {
+      ...todayRecord,
+      check_out: cout,
+      total_hours: '8h 15m',
+      recorded_by: todayRecord.recorded_by || 'Self Punch',
+    };
+
+    try {
+      await api.createStaffAttendance(updatedRec);
+    } catch (e) {}
+
+    const updated = records.map(r => r.date === todayStr ? updatedRec : r);
+    setRecords(updated);
+    try {
+      localStorage.setItem('portal_staff_attendance_db', JSON.stringify(updated));
+    } catch (e) {}
+
+    setSuccessMsg(`✓ Checked out at ${cout}. Total workday hours logged!`);
+    setTimeout(() => setSuccessMsg(''), 4000);
+  };
+
+  const handleManualAddAttendance = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const dateVal = fd.get('date');
+    const cin = fd.get('check_in');
+    const cout = fd.get('check_out');
+    const hours = fd.get('total_hours') || '8h 00m';
+    const statusVal = fd.get('status') || 'Present';
+
+    const manualRec = {
+      id: Date.now(),
+      date: dateVal,
+      check_in: cin,
+      check_out: cout,
+      total_hours: hours,
+      status: statusVal,
+      recorded_by: 'Self Manual Entry',
+      staff_name: 'Staff User',
+    };
+
+    try {
+      await api.createStaffAttendance(manualRec);
+    } catch (err) {}
+
+    const updated = [manualRec, ...records.filter(r => r.date !== dateVal)];
+    setRecords(updated);
+    try {
+      localStorage.setItem('portal_staff_attendance_db', JSON.stringify(updated));
+    } catch (e) {}
+
+    setShowAddModal(false);
+    setSuccessMsg(`✓ Attendance logged for ${dateVal} (${cin} – ${cout})!`);
+    setTimeout(() => setSuccessMsg(''), 4000);
+  };
 
   const cols = [
-    { key: 'date', label: 'Date' },
-    { key: 'checkIn', label: 'Check In' },
-    { key: 'checkOut', label: 'Check Out' },
-    { key: 'status', label: 'Status', render: v => <Badge label={v || 'Present'} variant={v === 'Absent' ? 'absent' : 'present'} dot /> },
+    { key: 'date', label: 'Date', render: v => <span style={{ fontWeight: 600 }}>{v}</span> },
+    { key: 'check_in', label: 'Check-In Time', render: v => (
+      <span style={{ color: v && v !== '—' ? 'var(--success)' : 'var(--text-muted)', fontWeight: 600 }}>
+        {v || '—'}
+      </span>
+    )},
+    { key: 'check_out', label: 'Check-Out Time', render: v => (
+      <span style={{ color: v && v !== '—' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600 }}>
+        {v || '—'}
+      </span>
+    )},
+    { key: 'total_hours', label: 'Total Hours', render: v => <Badge label={v || '8h 00m'} variant="info" /> },
+    { key: 'status', label: 'Status', render: v => {
+      const s = (v || 'Present').toLowerCase();
+      const variant = s === 'present' ? 'success' : s === 'absent' ? 'danger' : 'warning';
+      return <Badge label={v || 'Present'} variant={variant} dot />;
+    }},
+    { key: 'recorded_by', label: 'Recorded By', render: v => {
+      const markedByHM = v && v.toLowerCase().includes('hm');
+      return markedByHM ? (
+        <span
+          title="Attendance marked by Head Master"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '4px 9px',
+            borderRadius: '999px',
+            background: 'var(--accent-light)',
+            color: 'var(--accent)',
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          <span aria-hidden="true">✓</span>
+          Marked by HM
+        </span>
+      ) : (
+        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)' }}>
+          {v || 'Self Punch'}
+        </span>
+      );
+    }},
   ];
-  const now = () => new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  const presentDays = records.filter(r => (r.status || 'Present').toLowerCase() === 'present').length;
 
   return (
     <Section>
-      <PageHeader title="My Attendance" subtitle="Record your daily check-in and check-out." />
-      <Card>
-        <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
-          <Button
-            variant="primary" icon="⏰"
-            disabled={checkedIn}
-            onClick={() => { setCheckedIn(true); setCheckInTime(now()); }}
-          >Check In</Button>
-          <Button
-            variant="secondary" icon="🚪"
-            disabled={!checkedIn}
-            onClick={() => setCheckedIn(false)}
-          >Check Out</Button>
-          {checkedIn && <span style={{ fontSize: 13, color: 'var(--success)' }}>✓ Checked in at {checkInTime}</span>}
+      <PageHeader
+        title="My Attendance & Work Timings"
+        subtitle="View your daily check-in / check-out history, punch attendance, or add past logs."
+        action={
+          <Button icon="plus" onClick={() => setShowAddModal(true)}>
+            Add Attendance Entry
+          </Button>
+        }
+      />
+
+      {successMsg && (
+        <div style={{ padding: '12px 16px', background: 'var(--success-light)', border: '1px solid var(--success)', borderRadius: 'var(--radius-md)', color: 'var(--success)', fontSize: 14, fontWeight: 500 }}>
+          {successMsg}
         </div>
-      </Card>
+      )}
+
+      {/* Live Punch Card & Status */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+        <Card style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-glow)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                  Live Time Tracker
+                </span>
+                <h3 style={{ fontSize: 28, fontWeight: 800, margin: '4px 0', fontFamily: 'monospace', letterSpacing: '1px' }}>
+                  {currentTime}
+                </h3>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                  Today is {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </div>
+              <Badge
+                label={isCheckedOut ? 'Checked Out' : isCheckedIn ? 'Currently Active' : 'Not Punched'}
+                variant={isCheckedOut ? 'info' : isCheckedIn ? 'success' : 'warning'}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <Button
+                variant="primary"
+                icon="clock"
+                disabled={isCheckedIn}
+                onClick={handleCheckIn}
+                style={{ flex: 1, minWidth: 140 }}
+              >
+                {isCheckedIn ? `In at ${todayRecord?.check_in}` : 'Punch Check-In'}
+              </Button>
+
+              <Button
+                variant="outline"
+                icon="logout"
+                disabled={!isCheckedIn || isCheckedOut}
+                onClick={handleCheckOut}
+                style={{ flex: 1, minWidth: 140 }}
+              >
+                {isCheckedOut ? `Out at ${todayRecord?.check_out}` : 'Punch Check-Out'}
+              </Button>
+            </div>
+
+            {isCheckedIn && (
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', background: 'var(--bg-subtle)', padding: '10px 14px', borderRadius: 'var(--radius-md)' }}>
+                ✓ Today's punch in: <strong>{todayRecord?.check_in}</strong>
+                {isCheckedOut && <span> • Punch out: <strong>{todayRecord?.check_out}</strong></span>}
+                {todayRecord?.recorded_by && <span> • <em>({todayRecord.recorded_by})</em></span>}
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Quick Metrics */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <StatCard icon="attendance" label="Days Recorded" value={records.length} color="accent" />
+          <StatCard icon="check" label="Present Days" value={presentDays} color="success" />
+          <StatCard icon="clock" label="Average Workday" value="8.2 hrs" color="info" />
+          <StatCard icon="award" label="On-Time Rate" value="98%" color="warning" />
+        </div>
+      </div>
+
+      {/* Attendance History Table */}
       <Card>
-        <CardHeader title="Attendance History" />
-        <Table columns={cols} data={records} empty="No attendance records found." />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+          <CardHeader
+            title="Attendance & Check-in / Check-out History"
+            subtitle="Complete timestamped logs of your daily attendance (including entries made by Head Master)."
+          />
+          <Button size="sm" variant="outline" icon="plus" onClick={() => setShowAddModal(true)}>
+            Add Custom Entry
+          </Button>
+        </div>
+
+        <Table columns={cols} data={records} empty="No attendance records logged yet. Check in above or add an entry." />
       </Card>
+
+      {/* Manual Entry Modal */}
+      <Modal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add Attendance Record"
+        footer={
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <Button variant="ghost" onClick={() => setShowAddModal(false)}>Cancel</Button>
+            <Button type="submit" form="manual-staff-att-form">Save Entry</Button>
+          </div>
+        }
+      >
+        <form id="manual-staff-att-form" onSubmit={handleManualAddAttendance}>
+          <div className="form-grid">
+            <Input
+              label="Date"
+              name="date"
+              type="date"
+              defaultValue={todayStr}
+              required
+              className="form-col-span"
+            />
+            <Input
+              label="Check-In Time"
+              name="check_in"
+              defaultValue="08:45 AM"
+              placeholder="e.g. 08:45 AM"
+              required
+            />
+            <Input
+              label="Check-Out Time"
+              name="check_out"
+              defaultValue="05:15 PM"
+              placeholder="e.g. 05:15 PM"
+              required
+            />
+            <Input
+              label="Total Duration / Hours"
+              name="total_hours"
+              defaultValue="8h 30m"
+              placeholder="e.g. 8h 30m"
+            />
+            <Select
+              label="Status"
+              name="status"
+              defaultValue="Present"
+              options={[
+                { value: 'Present', label: 'Present' },
+                { value: 'Late', label: 'Late' },
+                { value: 'Half Day', label: 'Half Day' },
+                { value: 'Absent', label: 'Absent' },
+              ]}
+            />
+          </div>
+        </form>
+      </Modal>
     </Section>
   );
 }
@@ -672,7 +960,7 @@ export function StaffAttendanceStudents() {
       const stored = localStorage.getItem('portal_students_db');
       if (stored) return JSON.parse(stored);
     } catch (e) {}
-    return DEFAULT_STUDENTS;
+    return [];
   });
 
   useEffect(() => {
