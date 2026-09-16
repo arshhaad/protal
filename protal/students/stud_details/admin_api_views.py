@@ -4,13 +4,13 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Avg
 from django.utils import timezone
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 from .models import (
-    StudentProfile, Course, StudyMaterial, FeeTransaction,
+    StudentProfile, Course, StudyMaterial, FeeTransaction, Mark,
     Notification, Ticket,
 )
 from .serializers import (
@@ -110,38 +110,17 @@ class AdminDashboardView(APIView):
 
     def get(self, request):
         total_students  = StudentProfile.objects.count()
-        active_staff    = User.objects.filter(is_staff=True, is_active=True).count()
-        active_courses  = Course.objects.filter(is_active=True).count()
-        revenue         = FeeTransaction.objects.filter(status='paid').aggregate(total=Sum('amount'))['total'] or 0
-        open_tickets    = Ticket.objects.filter(status='open').count()
-        flagged_tickets = Ticket.objects.filter(status='in_progress').count()
-
-        # Recent registrations (last 30 days)
-        from datetime import timedelta
-        cutoff = timezone.now() - timedelta(days=30)
-        new_students = StudentProfile.objects.filter(created_at__gte=cutoff).count()
-
-        # Fee summary
-        total_fees    = FeeTransaction.objects.aggregate(t=Sum('amount'))['t'] or 0
-        pending_fees  = FeeTransaction.objects.filter(status='pending').aggregate(t=Sum('amount'))['t'] or 0
-        overdue_count = StudentProfile.objects.filter(
-            fee_transactions__status='overdue'
-        ).distinct().count()
+        total_hm = StaffProfile.objects.filter(designation__iexact='Head Master').count()
+        total_staff = StaffProfile.objects.exclude(designation__iexact='Head Master').count()
+        progress = Mark.objects.aggregate(average=Avg('scored'), subjects=Count('id'))
 
         return Response({
-            'stats': {
-                'total_students':   total_students,
-                'active_staff':     active_staff,
-                'active_courses':   active_courses,
-                'revenue_collected': str(revenue),
-                'open_tickets':     open_tickets,
-                'flagged_tickets':  flagged_tickets,
-                'new_students_month': new_students,
-            },
-            'fees': {
-                'total':       str(total_fees),
-                'pending':     str(pending_fees),
-                'overdue_students': overdue_count,
+            'total_hm': total_hm,
+            'total_staff': total_staff,
+            'total_students': total_students,
+            'academic_summary': {
+                'average_marks': round(float(progress['average']), 1) if progress['average'] is not None else 0,
+                'subjects_recorded': progress['subjects'],
             },
         })
 
@@ -194,8 +173,8 @@ class AdminCreateStudentView(APIView):
 
         if not all([enroll_id, first_name, class_name, email, password]):
             return Response({'detail': 'Enrollment ID, first name, class, email and password are required.'}, status=400)
-        if len(password) < 8:
-            return Response({'detail': 'Password must contain at least 8 characters.'}, status=400)
+        if len(password) < 6:
+            return Response({'detail': 'Password must contain at least 6 characters.'}, status=400)
         try:
             validate_email(email)
         except DjangoValidationError:
@@ -249,6 +228,35 @@ class AdminStaffListView(generics.ListAPIView):
     queryset           = StaffProfile.objects.select_related('user').all()
 
 
+class AdminHMListView(generics.ListAPIView):
+    serializer_class   = StaffProfileSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    filter_backends    = [filters.SearchFilter]
+    search_fields      = ['user__first_name', 'user__last_name', 'user__email']
+    queryset           = StaffProfile.objects.filter(designation__iexact='Head Master').select_related('user')
+
+
+class AdminCreateHMView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def post(self, request):
+        data = request.data.copy()
+        data['full_name'] = data.get('full_name', '').strip()
+        serializer = AdminSignupSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        first_name, _, last_name = data['full_name'].partition(' ')
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save(update_fields=['first_name', 'last_name'])
+        profile = StaffProfile.objects.create(
+            user=user,
+            department='Administration',
+            designation='Head Master',
+        )
+        return Response(StaffProfileSerializer(profile).data, status=201)
+
+
 class AdminCreateStaffView(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
@@ -261,8 +269,8 @@ class AdminCreateStaffView(APIView):
 
         if not all([first_name, email, department, password]):
             return Response({'detail': 'First name, department, email and password are required.'}, status=400)
-        if len(password) < 8:
-            return Response({'detail': 'Password must contain at least 8 characters.'}, status=400)
+        if len(password) < 6:
+            return Response({'detail': 'Password must contain at least 6 characters.'}, status=400)
         try:
             validate_email(email)
         except DjangoValidationError:

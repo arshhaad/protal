@@ -145,4 +145,8 @@ export const api = {
   getAdminCourses: () => apiRequest('/admin/courses/'),
   getAdminStudents: () => apiRequest('/admin/students/'),
   getAdminStaff: () => apiRequest('/admin/staff/'),
+  getAdminHM: () => apiRequest('/admin/hm/'),
+  createAdminHM: (data) => apiRequest('/admin/hm/create/', { method: 'POST', body: JSON.stringify(data) }),
+  createAdminStudent: (data) => apiRequest('/admin/students/create/', { method: 'POST', body: JSON.stringify(data) }),
+  createAdminStaff: (data) => apiRequest('/admin/staff/create/', { method: 'POST', body: JSON.stringify(data) }),
 };

@@ -75,6 +75,10 @@ admin_patterns = [
     path('staff/create/',        a.AdminCreateStaffView.as_view(),      name='api_admin_staff_create'),
     path('staff/<int:pk>/deactivate/', a.AdminDeactivateStaffView.as_view(), name='api_admin_staff_deactivate'),
 
+    # Head Masters
+    path('hm/',                  a.AdminHMListView.as_view(),            name='api_admin_hm'),
+    path('hm/create/',           a.AdminCreateHMView.as_view(),           name='api_admin_hm_create'),
+
     # Events
     path('events/',              a.AdminEventView.as_view(),            name='api_admin_events'),
     path('events/<int:pk>/',     a.AdminEventDetailView.as_view(),      name='api_admin_event_detail'),

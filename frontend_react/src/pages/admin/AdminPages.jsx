@@ -17,6 +17,17 @@ function Section({ children }) {
   return <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>{children}</div>;
 }
 
+function ListPager({ page, pageCount, onChange }) {
+  if (pageCount <= 1) return null;
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
+      <Button size="sm" variant="outline" disabled={page === 1} onClick={() => onChange(page - 1)}>Previous</Button>
+      <span style={{ alignSelf: 'center', fontSize: 13, color: 'var(--text-muted)' }}>Page {page} of {pageCount}</span>
+      <Button size="sm" variant="outline" disabled={page === pageCount} onClick={() => onChange(page + 1)}>Next</Button>
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════
    ADMIN DASHBOARD
 ════════════════════════════════════════════ */
@@ -27,9 +38,9 @@ export function AdminDashboard() {
 
   const [metrics, setMetrics] = useState({
     total_students: 0,
-    active_staff: 0,
-    active_courses: 0,
-    revenue_collected: '₹0',
+    total_staff: 0,
+    total_hm: 0,
+    academic_summary: { average_marks: 0, subjects_recorded: 0 },
   });
   const [enrolData, setEnrolData] = useState([]);
   const [feeData, setFeeData] = useState([]);
@@ -42,9 +53,9 @@ export function AdminDashboard() {
         if (!res) return;
         setMetrics({
           total_students: res.total_students || 0,
-          active_staff: res.active_staff || 0,
-          active_courses: res.active_courses || 0,
-          revenue_collected: res.revenue_collected ? `₹${res.revenue_collected}` : '₹0',
+          total_staff: res.total_staff || 0,
+          total_hm: res.total_hm || 0,
+          academic_summary: res.academic_summary || { average_marks: 0, subjects_recorded: 0 },
         });
         if (res.enrol_trend) setEnrolData(res.enrol_trend);
         if (res.fee_trend) setFeeData(res.fee_trend);
@@ -58,14 +69,22 @@ export function AdminDashboard() {
 
   return (
     <Section>
-      <PageHeader title="Admin Dashboard" subtitle="Platform health and key metrics at a glance." />
+      <PageHeader title="Admin Dashboard" subtitle="Users and academic progress overview." />
 
       <div className="dash-grid-4">
         <StatCard icon="students" label="Total Students" value={String(metrics.total_students)} color="accent" />
-        <StatCard icon="staff" label="Active Staff" value={String(metrics.active_staff)} color="info" />
-        <StatCard icon="courses" label="Active Courses" value={String(metrics.active_courses)} color="success" />
-        <StatCard icon="payment" label="Revenue Collected" value={metrics.revenue_collected} color="warning" />
+        <StatCard icon="staff" label="Total HM" value={String(metrics.total_hm)} color="info" />
+        <StatCard icon="staff" label="Total Staff" value={String(metrics.total_staff)} color="success" />
+        <StatCard icon="reports" label="Average Marks" value={`${metrics.academic_summary.average_marks}%`} color="warning" />
       </div>
+
+      <Card>
+        <CardHeader title="Academic Progress Summary" subtitle="Performance across recorded student marks." />
+        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+          <div><strong style={{ fontSize: 28 }}>{metrics.academic_summary.average_marks}%</strong><div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Average marks</div></div>
+          <div><strong style={{ fontSize: 28 }}>{metrics.academic_summary.subjects_recorded}</strong><div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Subjects recorded</div></div>
+        </div>
+      </Card>
 
       <div className="dash-grid-2">
         <Card>
@@ -214,6 +233,68 @@ export function AdminManageCourses() {
 }
 
 /* ════════════════════════════════════════════
+   MANAGE HEAD MASTERS
+════════════════════════════════════════════ */
+export function AdminManageHM() {
+  const [hm, setHm] = useState([]);
+  const [page, setPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const loadHM = () => api.getAdminHM()
+    .then(res => setHm(Array.isArray(res) ? res : res?.results || []))
+    .catch(err => setError(err.message || 'Unable to load Head Masters.'));
+
+  useEffect(() => {
+    loadHM();
+  }, []);
+
+  const handleAdd = async (event) => {
+    event.preventDefault();
+    setError('');
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    if (data.password1 !== data.password2) return setError("Passwords don't match.");
+    if (data.password1.length < 6) return setError('Password must be at least 6 characters.');
+    setLoading(true);
+    try {
+      await api.createAdminHM(data);
+      setShowModal(false);
+      event.currentTarget.reset();
+      await loadHM();
+    } catch (err) {
+      setError(err.message || 'Unable to add Head Master.');
+    } finally { setLoading(false); }
+  };
+
+  const cols = [
+    { key: 'full_name', label: 'Name', render: (v, r) => v || r.user?.full_name || r.user?.username || '—' },
+    { key: 'email', label: 'Email', render: (v, r) => v || r.user?.email || '—' },
+    { key: 'designation', label: 'Role', render: () => <Badge label="Head Master" variant="info" /> },
+    { key: 'is_active', label: 'Status', render: v => <Badge label={v === false ? 'Inactive' : 'Active'} variant={v === false ? 'inactive' : 'active'} dot /> },
+  ];
+
+  return (
+    <Section>
+      <PageHeader title="Manage Head Masters" subtitle="View and manage HM accounts."
+        action={<Button icon="+" onClick={() => { setError(''); setShowModal(true); }}>Add HM</Button>} />
+      <Card><Table columns={cols} data={hm.slice((page - 1) * 10, page * 10)} empty="No Head Master accounts found." /><ListPager page={page} pageCount={Math.ceil(hm.length / 10)} onChange={setPage} /></Card>
+      <Modal open={showModal} onClose={() => setShowModal(false)} title="Add Head Master"
+        footer={<><Button variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button><Button type="submit" form="add-hm-form" loading={loading}>Add HM</Button></>}>
+        <form id="add-hm-form" onSubmit={handleAdd} className="form-grid">
+          {error && <div className="auth-alert auth-alert--error form-col-span">{error}</div>}
+          <Input label="Full Name" name="full_name" required />
+          <Input label="Username" name="username" required />
+          <Input label="Email" name="email" type="email" required />
+          <Input label="Password" name="password1" type="password" minLength="6" required />
+          <Input label="Confirm Password" name="password2" type="password" minLength="6" required />
+        </form>
+      </Modal>
+    </Section>
+  );
+}
+
+/* ════════════════════════════════════════════
    MANAGE USERS (STUDENTS)
 ════════════════════════════════════════════ */
 export function AdminManageUsers() {
@@ -221,6 +302,9 @@ export function AdminManageUsers() {
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('all');
   const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     api.getAdminStudents()
@@ -236,6 +320,26 @@ export function AdminManageUsers() {
     ((u.full_name || u.name || '').toLowerCase().includes(search.toLowerCase()) || (u.enroll_id || u.enroll || '').toLowerCase().includes(search.toLowerCase()))
   );
 
+  const handleAdd = async (event) => {
+    event.preventDefault();
+    setError('');
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const nameParts = data.full_name.trim().split(/\s+/);
+    if (nameParts.length < 2) return setError('Enter the student first and last name.');
+    if (data.password.length < 6) return setError('Password must be at least 6 characters.');
+    setLoading(true);
+    try {
+      const student = await api.createAdminStudent({
+        enroll_id: data.enroll_id, first_name: nameParts[0], last_name: nameParts.slice(1).join(' '),
+        email: data.email, class_name: data.class_name, section: data.section, password: data.password,
+      });
+      setUsers(current => [student, ...current]);
+      setShowModal(false);
+      event.currentTarget.reset();
+    } catch (err) { setError(err.message || 'Unable to add student.'); }
+    finally { setLoading(false); }
+  };
+
   const cols = [
     { key: 'enroll_id', label: 'Enroll ID', render: (v, r) => v || r.enroll || '—' },
     { key: 'full_name', label: 'Name', render: (v, r) => (
@@ -245,6 +349,7 @@ export function AdminManageUsers() {
     )},
     { key: 'email', label: 'Email', render: (v, r) => <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{v || r.user?.email || '—'}</span> },
     { key: 'class_name', label: 'Class', render: (v, r) => v || r.class || '—' },
+    { key: 'academic_progress', label: 'Academic Progress', render: v => `${v?.average_marks || 0}% avg (${v?.subjects_recorded || 0} subjects)` },
     { key: 'is_active', label: 'Status', render: v => <Badge label={v ? 'Active' : 'Inactive'} variant={v ? 'active' : 'inactive'} dot /> },
   ];
 
@@ -258,18 +363,21 @@ export function AdminManageUsers() {
           <Tabs tabs={[{ value: 'all', label: 'All' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' }]}
             active={tab} onChange={setTab} />
         </div>
-        <Table columns={cols} data={filtered} empty="No student records found." emptyAction={<Button onClick={() => setShowModal(true)}>Add Student</Button>} />
+        <Table columns={cols} data={filtered.slice((page - 1) * 10, page * 10)} empty="No student records found." emptyAction={<Button onClick={() => setShowModal(true)}>Add Student</Button>} />
+        <ListPager page={page} pageCount={Math.ceil(filtered.length / 10)} onChange={setPage} />
       </Card>
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="New Student Account"
-        footer={<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={() => setShowModal(false)}>Create Account</Button></div>}>
-        <div className="form-grid">
-          <Input label="Enrollment ID" placeholder="STU-001" required />
-          <Input label="Full Name" placeholder="Student Name" required />
-          <Input label="Email" placeholder="student@school.edu" type="email" required />
-          <Input label="Class" placeholder="Class XI-A" />
-          <Input label="Initial Password" type="password" required className="form-col-span" />
-        </div>
+        footer={<><Button variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button><Button type="submit" form="add-student-form" loading={loading}>Create Account</Button></>}>
+        <form id="add-student-form" onSubmit={handleAdd} className="form-grid">
+          {error && <div className="auth-alert auth-alert--error form-col-span">{error}</div>}
+          <Input label="Enrollment ID" name="enroll_id" placeholder="STU-001" required />
+          <Input label="Full Name" name="full_name" placeholder="Student Name" required />
+          <Input label="Email" name="email" placeholder="student@school.edu" type="email" required />
+          <Input label="Class" name="class_name" placeholder="Class XI-A" required />
+          <Input label="Section" name="section" placeholder="A" />
+          <Input label="Initial Password" name="password" type="password" minLength="6" required className="form-col-span" />
+        </form>
       </Modal>
     </Section>
   );
@@ -282,6 +390,9 @@ export function AdminManageStaff() {
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
   const [staff, setStaff] = useState([]);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     api.getAdminStaff()
@@ -293,6 +404,26 @@ export function AdminManageStaff() {
   }, []);
 
   const filtered = staff.filter(s => (s.name || s.full_name || '').toLowerCase().includes(search.toLowerCase()));
+
+  const handleAdd = async (event) => {
+    event.preventDefault();
+    setError('');
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const nameParts = data.full_name.trim().split(/\s+/);
+    if (nameParts.length < 2) return setError('Enter the staff first and last name.');
+    if (data.password.length < 6) return setError('Password must be at least 6 characters.');
+    setLoading(true);
+    try {
+      const member = await api.createAdminStaff({
+        first_name: nameParts[0], last_name: nameParts.slice(1).join(' '),
+        email: data.email, department: data.department, password: data.password,
+      });
+      setStaff(current => [member, ...current]);
+      setShowModal(false);
+      event.currentTarget.reset();
+    } catch (err) { setError(err.message || 'Unable to add staff.'); }
+    finally { setLoading(false); }
+  };
 
   const cols = [
     { key: 'full_name', label: 'Name', render: (v, r) => (
@@ -313,17 +444,19 @@ export function AdminManageStaff() {
         <div style={{ marginBottom: 16 }}>
           <SearchInput value={search} onChange={setSearch} placeholder="Search staff…" style={{ maxWidth: 280 }} />
         </div>
-        <Table columns={cols} data={filtered} empty="No faculty records found." />
+        <Table columns={cols} data={filtered.slice((page - 1) * 10, page * 10)} empty="No faculty records found." />
+        <ListPager page={page} pageCount={Math.ceil(filtered.length / 10)} onChange={setPage} />
       </Card>
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="New Staff Account"
-        footer={<div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={() => setShowModal(false)}>Create Account</Button></div>}>
-        <div className="form-grid">
-          <Input label="Full Name" placeholder="Faculty Name" required />
-          <Input label="Email" placeholder="staff@school.edu" type="email" required />
-          <Input label="Department" placeholder="Department" required />
-          <Input label="Password" type="password" required />
-        </div>
+        footer={<><Button variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button><Button type="submit" form="add-staff-form" loading={loading}>Create Account</Button></>}>
+        <form id="add-staff-form" onSubmit={handleAdd} className="form-grid">
+          {error && <div className="auth-alert auth-alert--error form-col-span">{error}</div>}
+          <Input label="Full Name" name="full_name" placeholder="Faculty Name" required className="form-col-span" />
+          <Input label="Email" name="email" placeholder="staff@school.edu" type="email" required />
+          <Input label="Department" name="department" placeholder="Department" required />
+          <Input label="Password" name="password" type="password" minLength="6" required className="form-col-span" />
+        </form>
       </Modal>
     </Section>
   );
