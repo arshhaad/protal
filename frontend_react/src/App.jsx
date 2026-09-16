@@ -58,9 +58,7 @@ import AdminResetPassword  from './pages/admin/AdminResetPassword';
 
 // ── Admin Pages ──
 import {
-  AdminDashboard, AdminManageCourses, AdminManageUsers, AdminManageStaff,
-  AdminEvents, AdminMessageUsers, AdminMessageStaff,
-  AdminStaffReports, AdminStudentReports, AdminCourseReports, AdminPayments,
+  AdminDashboard, AdminManageHM, AdminManageUsers, AdminManageStaff,
 } from './pages/admin/AdminPages';
 
 export default function App() {
@@ -146,16 +144,9 @@ export default function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="/admin/login" replace />} />
               <Route path="dashboard"       element={<AdminDashboard />} />
-              <Route path="manage-courses"  element={<AdminManageCourses />} />
-              <Route path="manage-users"    element={<AdminManageUsers />} />
+              <Route path="manage-hm"       element={<AdminManageHM />} />
+              <Route path="manage-students" element={<AdminManageUsers />} />
               <Route path="manage-staff"    element={<AdminManageStaff />} />
-              <Route path="events"          element={<AdminEvents />} />
-              <Route path="message-users"   element={<AdminMessageUsers />} />
-              <Route path="message-staff"   element={<AdminMessageStaff />} />
-              <Route path="staff-reports"   element={<AdminStaffReports />} />
-              <Route path="student-reports" element={<AdminStudentReports />} />
-              <Route path="course-reports"  element={<AdminCourseReports />} />
-              <Route path="payments"        element={<AdminPayments />} />
             </Route>
 
             {/* Fallback */}

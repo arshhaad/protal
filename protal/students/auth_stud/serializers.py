@@ -88,7 +88,7 @@ class AdminLoginSerializer(serializers.Serializer):
         if not user.is_active:
             raise serializers.ValidationError('Your account is inactive.')
 
-        if not (user.is_staff or user.is_superuser):
+        if not user.is_superuser:
             raise serializers.ValidationError('Admin access only.')
 
         data['user'] = user

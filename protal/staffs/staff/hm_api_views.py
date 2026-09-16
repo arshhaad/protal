@@ -62,6 +62,11 @@ class HMSignupView(APIView):
         user = serializer.save()
         user.is_superuser = True
         user.save(update_fields=['is_superuser'])
+        StaffProfile.objects.create(
+            user=user,
+            department='Administration',
+            designation='Head Master',
+        )
         return Response(
             {'detail': 'Signup successful. Please login to continue.'},
             status=status.HTTP_201_CREATED,

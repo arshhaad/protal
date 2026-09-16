@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.db.models import Avg
 from django.utils import timezone
 from .models import (
     StudentProfile, Course, StudyMaterial, ExamSchedule,
@@ -44,13 +45,15 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     user      = UserMinimalSerializer(read_only=True)
     full_name = serializers.SerializerMethodField()
     dob_iso   = serializers.SerializerMethodField()
+    academic_progress = serializers.SerializerMethodField()
 
     class Meta:
         model  = StudentProfile
         fields = [
             'id', 'user', 'full_name', 'enroll_id', 'phone', 'dob', 'dob_iso',
             'gender', 'address', 'class_name', 'section', 'roll_no', 'semester',
-            'guardian', 'guardian_phone', 'profile_pic', 'created_at', 'updated_at',
+            'guardian', 'guardian_phone', 'profile_pic', 'academic_progress',
+            'created_at', 'updated_at',
         ]
         read_only_fields = ['enroll_id', 'created_at', 'updated_at']
 
@@ -59,6 +62,14 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
     def get_dob_iso(self, obj):
         return obj.dob_iso
+
+    def get_academic_progress(self, obj):
+        marks = obj.marks.all()
+        average = marks.aggregate(value=Avg('scored'))['value']
+        return {
+            'average_marks': round(float(average), 1) if average is not None else 0,
+            'subjects_recorded': marks.count(),
+        }
 
 
 class StudentProfileUpdateSerializer(serializers.ModelSerializer):

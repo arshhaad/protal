@@ -5,19 +5,9 @@ const navItems = [
   { section: 'Main' },
   { to: '/admin/dashboard', icon: '🏠', label: 'Dashboard' },
   { section: 'Management' },
-  { to: '/admin/manage-courses', icon: '📚', label: 'Manage Courses' },
-  { to: '/admin/manage-users', icon: '👩‍🎓', label: 'Manage Users' },
+  { to: '/admin/manage-hm', icon: '🏛️', label: 'Manage HM' },
+  { to: '/admin/manage-students', icon: '👩‍🎓', label: 'Manage Students' },
   { to: '/admin/manage-staff', icon: '👨‍🏫', label: 'Manage Staff' },
-  { section: 'Events & Communication' },
-  { to: '/admin/events', icon: '🗓️', label: 'Events' },
-  { to: '/admin/message-users', icon: '💬', label: 'Message Users' },
-  { to: '/admin/message-staff', icon: '📨', label: 'Message Staff' },
-  { section: 'Reports' },
-  { to: '/admin/staff-reports', icon: '📊', label: 'Staff Reports' },
-  { to: '/admin/student-reports', icon: '📈', label: 'Student Reports' },
-  { to: '/admin/course-reports', icon: '📉', label: 'Course Reports' },
-  { section: 'Finance' },
-  { to: '/admin/payments', icon: '💳', label: 'Payment Handling' },
 ];
 
 export default function AdminSidebar() {
